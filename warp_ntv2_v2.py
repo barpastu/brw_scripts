@@ -5,7 +5,8 @@
 from osgeo import gdal
 from osgeo import ogr, osr
 import os
-import urllib2
+#import urllib2
+import requests
 import json
 import subprocess
 import logging
@@ -18,10 +19,10 @@ aufloesung="12_5cm"
 colorisation = "rgb"
 
 #Settings for RestService
-proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
-auth = urllib2.HTTPBasicAuthHandler()
-opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
-urllib2.install_opener(opener)
+#proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
+#auth = urllib2.HTTPBasicAuthHandler()
+#opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
+#urllib2.install_opener(opener)
 
 #Logger for warnings and errors
 logger_error = logging.getLogger('brw_error')
@@ -233,8 +234,10 @@ for feature in layer:
     url_ll = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting="
     url_ll += str(middleX - height_extract) + "&northing=" + str(middleY - height_extract) 
     url_ll += "&format=json"
-    response_ll = urllib2.urlopen(url_ll)
-    data_ll = json.load(response_ll)
+    #response_ll = urllib2.urlopen(url_ll)
+    #data_ll = json.load(response_ll)
+    response_ll = requests.get(url_ll)
+    data_ll = response_ll.json()
     xmin_st = data_ll.values()[0]
     ymin_st = data_ll.values()[1]
     
@@ -242,8 +245,10 @@ for feature in layer:
     url_ur = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting=" 
     url_ur += str(middleX + height_extract) + "&northing=" + str(middleY + height_extract)
     url_ur +="&format=json"
-    response_ur = urllib2.urlopen(url_ur)
-    data_ur = json.load(response_ur)
+    #response_ur = urllib2.urlopen(url_ur)
+    #data_ur = json.load(response_ur)
+    response_ur = requests.get(url_ur)
+    data_ur = response_ur.json()
     xmax_st = data_ur.values()[0]
     ymax_st = data_ur.values()[1]
 
