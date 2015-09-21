@@ -4,28 +4,30 @@
 from osgeo import gdal
 from osgeo import ogr, osr
 import os
-import urllib2
+#import urllib2
 import json
 import subprocess
 import logging
+import requests
 
 
-year = "1993"
+year = "2015"
+year_short = "15"
 gsd = "5.000"
 aufloesung="5_m"
-colorisation = "grey"
+colorisation = "rgb"
 if int(year)==1993 :
     photometric = "MINISBLACK"
     photometric_jpeg = "MINISBLACK"
 if int(year)>1993 : 
     photometric ="RGB"
-    photometric ="YCBCR"
+    photometric_jpeg ="YCBCR"
 
 #Settings for RestService
-proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
-auth = urllib2.HTTPBasicAuthHandler()
-opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
-urllib2.install_opener(opener)
+#proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
+#auth = urllib2.HTTPBasicAuthHandler()
+#opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
+#urllib2.install_opener(opener)
 
 #Logger for warnings and errors
 logger_error = logging.getLogger('brw_error')
@@ -51,16 +53,16 @@ logger_notice.info("Start " + year)
 
 #Settings for resampling-methode and vrt-path
 method = 'lanczos'
-path_old_location = "ortho_" + year + "/12_5cm/" + colorisation
-path_new_location="Orthofoto/" + year
+path_old_location = "/home/barpastu/Geodaten/LV03/ortho" + year_short + "/" + aufloesung + "/" + colorisation
+path_new_location="/home/barpastu/Geodaten/LV95/orthofoto/" + year
 if int(year)>2002:
-    path_lv03_vrt =path_new_location + "/lv03/"+ colorisation + "/12_5cm"
+    path_lv03_vrt ="/home/barpastu/Geodaten/LV03/ortho" + year_short + "/12_5cm/" + colorisation
 if int(year)==2002:
     path_lv03_vrt =path_new_location + "/lv03/"+ colorisation + "/50_cm"
 if int(year)==1993:
     path_lv03_vrt =path_new_location + "/lv03/"+ colorisation + "/70_cm"
-path_lv03 = path_new_location + "/lv03/"+ colorisation + "/" + aufloesung 
-path_lv95 = path_new_location + "/lv95/"+ colorisation + "/" + aufloesung 
+path_lv03 = path_old_location
+path_lv95 = path_new_location + "/"+ colorisation + "/" + aufloesung 
 orthofilename = "ortho"+year
 #vrt = path_lv03 + "/" + orthofilename+".vrt"
 vrt_95 = path_lv95 + "/ohne_overviews/" +orthofilename+".vrt"
@@ -80,17 +82,11 @@ if not os.path.exists(path_lv03 + "/working/"):
 
 
 
-
-
-
-
 #Definition of spatial reference systems
 S_SRS = "+proj=somerc +lat_0=46.952405555555555N +lon_0=7.439583333333333E +ellps=bessel +x_0=600000 +y_0=200000 +towgs84=674.374,15.056,405.346 +units=m +units=m +k_0=1 +nadgrids=./chenyx06a.gsb"
 T_SRS = "+proj=somerc +lat_0=46.952405555555555N +lon_0=7.439583333333333E +ellps=bessel +x_0=2600000 +y_0=1200000 +towgs84=674.374,15.056,405.346 +units=m +k_0=1 +nadgrids=@null"
 
 ogr.UseExceptions() 
-
-
 
 
 #Create Tileindex
@@ -127,7 +123,7 @@ for feature in layer:
     cmd = "gdalwarp -tr " + gsd + " " + gsd + " "
     cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=" + photometric + " -co TILED=YES "
     cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
-    #cmd += "-co PREDICTOR=2" 
+    cmd += "-co PREDICTOR=2" 
     cmd += " -r " + method + " " + path_lv03_vrt +"/" + orthofilename+".vrt" + " " 
     cmd += path_lv03 +"/working/" + infileNameFile_jpeg
     os.system(cmd)
@@ -179,8 +175,10 @@ for feature in layer:
     url_ll = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting="
     url_ll += str(minX-2000000) + "&northing=" + str(minY-1000000) 
     url_ll += "&format=json"
-    response_ll = urllib2.urlopen(url_ll)
-    data_ll = json.load(response_ll)
+    response_ll = requests.get(url_ll)
+    data_ll = response_ll.json()
+    #response_ll = urllib2.urlopen(url_ll)
+    #data_ll = json.load(response_ll)
     xmin_st = data_ll.values()[0]
     ymin_st = data_ll.values()[1]
     print ("lower left corner")
@@ -188,8 +186,10 @@ for feature in layer:
     url_ur = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting=" 
     url_ur += str(maxX-2000000) + "&northing=" + str(maxY-1000000)
     url_ur +="&format=json"
-    response_ur = urllib2.urlopen(url_ur)
-    data_ur = json.load(response_ur)
+    response_ur = requests.get(url_ur)
+    data_ur = response_ur.json()
+    #response_ur = urllib2.urlopen(url_ur)
+    #data_ur = json.load(response_ur)
     xmax_st = data_ur.values()[0]
     ymax_st = data_ur.values()[1]
     print ("upper right")
@@ -265,11 +265,17 @@ for feature in layer:
 
 
     # generate Overviews 
-cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE --config PHOTOMETRIC_OVERVIEW " 
-cmd += photometric_jpeg + "  --config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
-os.system(cmd) 
-    #print("overviews generieren")
-print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
+    if int(year)<=2012 :
+        cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE --config PHOTOMETRIC_OVERVIEW " 
+        cmd += photometric_jpeg + "  --config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
+        os.system(cmd) 
+        #print("overviews generieren")
+        print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
+        
+    if int(year) > 2012:
+        cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE --config PHOTOMETRIC_OVERVIEW YCBCR " 
+        cmd += "--config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
+        os.system(cmd)
 
 
     #generate Overviews for newly compressed lv03-Tiles 

@@ -12,8 +12,8 @@ import logging
 
 
 
-gsd = "0.50"
-aufloesung="50_cm"
+gsd = "30"
+aufloesung="30_m"
 colorisation = "gray"
 
 #Settings for RestService
@@ -41,16 +41,16 @@ logger_notice.setLevel(logging.INFO)
 
 
 #Start calculations
-logger_notice.info("Start felsschraffuren")
+logger_notice.info("Start relief")
 
 
 #Settings for resampling-methode and vrt-path
 method = 'near'
-path_old_location = "felsschraffuren/LV03"
-path_new_location="felsschraffuren/LV95"
+path_old_location = "images/LV03"
+path_new_location="images/LV95"
 path_lv03 = path_old_location 
 path_lv95 = path_new_location + "/" + aufloesung 
-orthofilename = "felsschraffur"
+orthofilename = "relief"
 vrt = path_lv03 + "/" + orthofilename+".vrt"
 vrt_95 = path_lv95 + "/ohne_overviews/" +orthofilename+".vrt"
 height_extract = 500
@@ -73,7 +73,7 @@ if not os.path.exists(path_lv95 + "/ohne_overviews"):
 if not os.path.exists(path_lv03 + "/original/"):
     os.makedirs(path_lv03 + "/original/")
     for i in os.listdir(path_old_location + "/"):
-        if i.endswith(".tif"):
+        if i.endswith("orig.tif"):
             cmd = "gdal_translate -of GTiff -co 'TILED=YES' -a_srs EPSG:21781 " +path_old_location + "/"
             cmd += i + " " + path_lv03 + "/original/" + os.path.basename(i)
             os.system(cmd)
@@ -275,20 +275,38 @@ for feature in layer:
     #print("lv03")
 
 
-    cmd = "cp " + os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg) + " "
-    cmd += path_lv03 +"/"
-    os.system(cmd)
-    cmd = "cp " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " "
-    cmd += path_lv03 + "/"
-    os.system(cmd)
-    cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", outfileName_jpeg) + " "
-    cmd += path_lv95 + "/"
-    os.system(cmd)
-    cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg) 
-    cmd += " " + path_lv95 + "/"
+#    cmd = "cp " + os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg) + " "
+#    cmd += path_lv03 +"/"
+#    os.system(cmd)
+#    cmd = "cp " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " "
+#    cmd += path_lv03 + "/"
+#    os.system(cmd)
+#    cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", outfileName_jpeg) + " "
+#    cmd += path_lv95 + "/"
+#    os.system(cmd)
+#    cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg) 
+#    cmd += " " + path_lv95 + "/"
+#    os.system(cmd)
+
+    cmd = "gdal_translate -co COMPRESS=PACKBITS -co TILED=YES -co PHOTOMETRIC=MINISBLACK "
+    cmd += os.path.join(path_lv03,"working", infileNameFile_jpeg) + " " 
+    cmd += os.path.join(path_lv03, infileNameFile_jpeg)
     os.system(cmd)
 
+    cmd = "gdal_translate -co COMPRESS=PACKBITS -co TILED=YES -co PHOTOMETRIC=MINISBLACK " 
+    cmd += os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg) + " "
+    cmd += os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg)
+    os.system(cmd)
 
+    cmd = "gdal_translate -co COMPRESS=PACKBITS -co TILED=YES -co PHOTOMETRIC=MINISBLACK "
+    cmd += os.path.join(path_lv95, "ohne_overviews", outfileName_jpeg) + " "
+    cmd += os.path.join(path_lv95, outfileName_jpeg)
+    os.system(cmd)
+
+    cmd = "gdal_translate -co COMPRESS=PACKBITS -co TILED=YES -co PHOTOMETRIC=MINISBLACK "
+    cmd += os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg) + " "
+    cmd += os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)
+    os.system(cmd)
 
 
     #Compare

@@ -12,8 +12,8 @@ import subprocess
 import logging
 
 
-year = "2015"
-year_short = "15"
+year = "2014"
+year_short = "14"
 gsd = "0.125"
 aufloesung="12_5cm"
 colorisation = "rgb"
@@ -48,7 +48,7 @@ logger_notice.info("Start " + year)
 
 #Settings for resampling-methode and vrt-path
 method = 'lanczos'
-path_old_location = "/home/barpastu/Geodaten/LV03/ortho" + year_short + "/" + colorisation + "/" + aufloesung
+path_old_location = "/home/barpastu/Geodaten/LV03/ortho" + year_short + "/" + aufloesung + "/" + colorisation
 path_new_location="/home/barpastu/Geodaten/LV95/orthofoto/" + year
 path_lv03 = path_old_location 
 path_lv95 = path_new_location + "/"+ colorisation + "/" + aufloesung 
@@ -72,68 +72,67 @@ if not os.path.exists(path_lv95 + "/ohne_overviews"):
 
 
 #Copy files to new folder (working-data)
+if not os.path.exists(path_lv03 + "/working/"):
+    os.makedirs(path_lv03 + "/working/")
+    for i in os.listdir(path_old_location + "/"):
+        if i.endswith(".tif"):
+            cmd = "gdal_translate -of GTiff -co 'TILED=YES' -a_srs EPSG:21781 " +path_old_location + "/"
+            cmd += i + " " + path_lv03 + "/working/" + os.path.basename(i)
+            #cmd = "cp " + path_old_location + "/*.tif " + path_lv03 + "/original/"
+            #print (cmd)
+            os.system(cmd)
+        #exit()
+
+
+#Copy files to working folder (working-data)
 #if not os.path.exists(path_lv03 + "/working/"):
 #    os.makedirs(path_lv03 + "/working/")
-#    for i in os.listdir(path_old_location + "/"):
-#        if i.endswith(".tif"):
-#            cmd = "gdal_translate -of GTiff -co 'TILED=YES' -a_srs EPSG:21781 " +path_old_location + "/"
-#            cmd += i + " " + path_lv03 + "/working/" + os.path.basename(i)
-#    #cmd = "cp " + path_old_location + "/*.tif " + path_lv03 + "/original/"
-#            print (cmd)
-#            os.system(cmd)
- #       #exit()
-
-
-##Copy files to working folder (working-data)
-##if not os.path.exists(path_lv03 + "/working/"):
-##    os.makedirs(path_lv03 + "/working/")
-##    cmd = "cp " + path_lv03 + "/original/*.tif " + path_lv03 + "/working/"
-##    os.system(cmd)
+#    cmd = "cp " + path_lv03 + "/original/*.tif " + path_lv03 + "/working/"
+#    os.system(cmd)
 
 
 
 
-##Remove overviews
-#for i in os.listdir(path_lv03 + "/working/"):
-#    #cmd = "gdal_translate -of GTiff -co 'TILED=YES' " + path_lv03+ "/original/" + os.path.basename(i) + " " + i 
-#    #os.system(cmd)
-#    if i.endswith(".tif"):
-#        cmd = "gdaladdo -clean " + path_lv03 + "/working/" +i
-#        os.system(cmd)
-#        #print cmd
-#        continue
-#    else:
-#        continue
+#Remove overviews
+for i in os.listdir(path_lv03 + "/working/"):
+    #cmd = "gdal_translate -of GTiff -co 'TILED=YES' " + path_lv03+ "/original/" + os.path.basename(i) + " " + i 
+    #os.system(cmd)
+    if i.endswith(".tif"):
+        cmd = "gdaladdo -clean " + path_lv03 + "/working/" +i
+        os.system(cmd)
+        #print cmd
+        continue
+    else:
+        continue
 
 #Minimize tiff-files
 #for infileNameFile_jpeg in os.listdir(os.path.join(path_lv03,"working")) :
-#    #Splits up the tiff-file (to decrease the file size (without overviews))
-#    cmd = "tiffsplit " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " /home/barpastu/Geodaten/working/tmp-"
-#    os.system(cmd)
-#    # Duplicate the geotransform and projection metadata from one raster dataset to another
-#    cmd = "python gdalcopyproj.py " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " /home/barpastu/Geodaten/working/tmp-aaa.tif"
-#    os.system(cmd)
-#    cmd = "mv /home/barpastu/Geodaten/working/tmp-aaa.tif "+ os.path.join(path_lv03,"working", infileNameFile_jpeg)
-#    os.system(cmd)
-#    #cmd = "rm tmp-???.tif"
-#    #os.system(cmd)
-
+    #Splits up the tiff-file (to decrease the file size (without overviews))
+    cmd = "tiffsplit " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " /home/barpastu/Geodaten/working/tmp-"
+    os.system(cmd)
+    # Duplicate the geotransform and projection metadata from one raster dataset to another
+    cmd = "python gdalcopyproj.py " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " /home/barpastu/Geodaten/working/tmp-aaa.tif"
+    os.system(cmd)
+    cmd = "mv /home/barpastu/Geodaten/working/tmp-aaa.tif "+ os.path.join(path_lv03,"working", infileNameFile_jpeg)
+    os.system(cmd)
+    #cmd = "rm tmp-???.tif"
+    #os.system(cmd)
 
 #Definition of spatial reference systems
 S_SRS = "+proj=somerc +lat_0=46.952405555555555N +lon_0=7.439583333333333E +ellps=bessel +x_0=600000 +y_0=200000 +towgs84=674.374,15.056,405.346 +units=m +units=m +k_0=1 +nadgrids=./chenyx06a.gsb"
 T_SRS = "+proj=somerc +lat_0=46.952405555555555N +lon_0=7.439583333333333E +ellps=bessel +x_0=2600000 +y_0=1200000 +towgs84=674.374,15.056,405.346 +units=m +k_0=1 +nadgrids=@null"
 
-#ogr.UseExceptions() 
+ogr.UseExceptions() 
 
-##Create Tileindex
-#cmd = "gdaltindex -write_absolute_path " + path_lv03 + "/" + orthofilename + ".shp " 
-#cmd += path_lv03 + "/working/*.tif"
-#os.system(cmd)
+#Create Tileindex
+cmd = "gdaltindex -write_absolute_path " + path_lv03 + "/" + orthofilename + ".shp " 
+cmd += path_lv03 + "/working/*.tif"
+os.system(cmd)
 
 
-##Create vrt
-#cmd = "gdalbuildvrt " + path_lv03 + "/" + orthofilename + ".vrt " + path_lv03 + "/working/*.tif"
-#os.system(cmd)
+#Create vrt
+cmd = "gdalbuildvrt " + path_lv03 + "/" + orthofilename + ".vrt " + path_lv03 + "/working/*.tif"
+os.system(cmd)
 
 
 #Shape-File with tile division
@@ -141,70 +140,70 @@ shp = ogr.Open(path_lv03 + "/" + orthofilename + ".shp")
 layer = shp.GetLayer(0)
 
 
-## Do for each tile
-#for feature in layer:
-#    infileName = feature.GetField('location')
-#    print infileName
-#    geom = feature.GetGeometryRef()
-#    env = geom.GetEnvelope()
-#
-#    minX = int(env[0] + 0.001 + 2000000)
-#    minY = int(env[2] + 0.001 + 1000000)
-#    maxX = int(env[1] + 0.001 + 2000000)
-#    maxY = int(env[3] + 0.001 + 1000000)
+# Do for each tile
+for feature in layer:
+    infileName = feature.GetField('location')
+    #print infileName
+    geom = feature.GetGeometryRef()
+    env = geom.GetEnvelope()
 
-#    middleX = (int(env[0] + 0.001)+int(env[1] + 0.001 ))/2
-#    middleY = (int(env[2] + 0.001)+int(env[3] + 0.001 ))/2
+    minX = int(env[0] + 0.001 + 2000000)
+    minY = int(env[2] + 0.001 + 1000000)
+    maxX = int(env[1] + 0.001 + 2000000)
+    maxY = int(env[3] + 0.001 + 1000000)
 
-#    minX_buffer = int(env[0] + 0.001-2)
-#    minY_buffer = int(env[2] + 0.001-2)
-#    maxX_buffer = int(env[1] + 0.001+2)
-#    maxY_buffer = int(env[3] + 0.001+2)
-    
-#    infileNameFile_jpeg = str(minX)[1:4] + str(minY)[1:4] + "_"+aufloesung+".tif"   
-#    outfileName_jpeg = str(minX)[0:4] + str(minY)[0:4] + "_"+aufloesung+".tif" 
+    middleX = (int(env[0] + 0.001)+int(env[1] + 0.001 ))/2
+    middleY = (int(env[2] + 0.001)+int(env[3] + 0.001 ))/2
 
-
-#    # Transformieren 
-#    cmd = "gdalwarp -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
-#    cmd += str(minY) + " " +  str(maxX) + " " +  str(maxY) + " -tr " + gsd + " " + gsd + " "
-#    cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=RGB -co TILED=YES "
-#    cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
-#    cmd += "-co PREDICTOR=2" 
-#    cmd += " -r " + method + " " + vrt + " " + path_lv95 + "/" + outfileName_jpeg
-#    os.system(cmd)
-#    print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
+    minX_buffer = int(env[0] + 0.001-2)
+    minY_buffer = int(env[2] + 0.001-2)
+    maxX_buffer = int(env[1] + 0.001+2)
+    maxY_buffer = int(env[3] + 0.001+2)
+   
+    infileNameFile_jpeg = str(minX)[1:4] + str(minY)[1:4] + "_"+aufloesung+".tif"   
+    outfileName_jpeg = str(minX)[0:4] + str(minY)[0:4] + "_"+aufloesung+".tif" 
 
 
-#    cmd = "gdal_edit.py -a_srs EPSG:2056 " + path_lv95 + "/" +outfileName_jpeg
-#    os.system(cmd)
-#    print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
+    # Transformieren 
+    cmd = "gdalwarp -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
+    cmd += str(minY) + " " +  str(maxX) + " " +  str(maxY) + " -tr " + gsd + " " + gsd + " "
+    cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=RGB -co TILED=YES "
+    cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
+    cmd += "-co PREDICTOR=2" 
+    cmd += " -r " + method + " " + vrt + " " + path_lv95 + "/" + outfileName_jpeg
+    os.system(cmd)
+    print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
 
 
- #   logger_notice.info(path_lv95 + "/" + outfileName_jpeg + " transformiert und zugeschnitten") 
+    cmd = "gdal_edit.py -a_srs EPSG:2056 " + path_lv95 + "/" +outfileName_jpeg
+    os.system(cmd)
+    print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
 
 
-#    cmd = "gdal_translate -co TILED=YES "
-#    cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
-#    cmd += "-co PREDICTOR=2"
-#    #os.system(cmd)
-
-#    # Files in anderen Ordner kopieren
-#    cmd ="cp " + path_lv95 + "/" +outfileName_jpeg + " " + path_lv95 + "/ohne_overviews/"
-#    os.system(cmd)
-#    #print("Files kopierien")
-#    print(os.path.getsize(path_lv95 + "/ohne_overviews/" + outfileName_jpeg))
-    
+    logger_notice.info(path_lv95 + "/" + outfileName_jpeg + " transformiert und zugeschnitten") 
 
 
+    cmd = "gdal_translate -co TILED=YES "
+    cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
+    cmd += "-co PREDICTOR=2"
+
+     #os.system(cmd)
+    # Files in anderen Ordner kopieren
+    cmd ="cp " + path_lv95 + "/" +outfileName_jpeg + " " + path_lv95 + "/ohne_overviews/"
+    os.system(cmd)
+    #print("Files kopierien")
+    #print(os.path.getsize(path_lv95 + "/ohne_overviews/" + outfileName_jpeg))
+   
 
 
-#if vrt_exists is False:
-#    print("vrt erstellen")
-#    #Create vrt
-#    cmd = "gdalbuildvrt " + path_lv95 + "/ohne_overviews/" + orthofilename + ".vrt " + path_lv95 + "/ohne_overviews/*.tif"
-#    os.system(cmd)
-#    print ("vrt erstellt")
+
+
+if vrt_exists is False:
+    #print("vrt erstellen")
+    #Create vrt
+    cmd = "gdalbuildvrt " + path_lv95 + "/ohne_overviews/" + orthofilename + ".vrt " + path_lv95 + "/ohne_overviews/*.tif"
+    os.system(cmd)
+    #print ("vrt erstellt")
 
 
 #Shape-File with tile division
@@ -214,7 +213,7 @@ layer = shp.GetLayer(0)
 # Do for each tile
 for feature in layer:
     infileName = feature.GetField('location')
-    print infileName
+    #print infileName
     geom = feature.GetGeometryRef()
     env = geom.GetEnvelope()
 
@@ -262,7 +261,7 @@ for feature in layer:
     cmd += os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
     os.system(cmd)
 
-    print (cmd + " erledigt") 
+    #print (cmd + " erledigt") 
     #Ausschnitt generieren LV03
     cmd = " gdalwarp -co PHOTOMETRIC=RGB -co TILED=YES -co PROFILE=GeoTIFF -tr " + gsd + " " + gsd
     cmd += " -te " + str(middleX-height_extract) + " " + str(middleY-height_extract) + " " 
@@ -270,8 +269,8 @@ for feature in layer:
     cmd +=os.path.join(path_lv03,"working", infileNameFile_jpeg) + " " 
     cmd +=os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg)
     os.system(cmd)
-    print ("********"+cmd)
-    print("lv03")
+    #print ("********"+cmd)
+    #print("lv03")
 
     if int(year)<=2012 :
 
@@ -319,15 +318,15 @@ for feature in layer:
     # generate Overviews 
     cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE --config PHOTOMETRIC_OVERVIEW YCBCR --config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
     os.system(cmd) 
-    print("overviews generieren")
-    print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
+    #print("overviews generieren")
+    #print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
 
 
     #generate Overviews for newly compressed lv03-Tiles 
     if int(year)<=2012:
         cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE  --config INTERLEAVE_OVERVIEW PIXEL --config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv03 + "/" + infileNameFile_jpeg + " 2 4 8 16 32 64 128"
         os.system(cmd)
-        print("overviews generieren lv03") 
+        #print("overviews generieren lv03") 
 
 
     #Compare
@@ -336,7 +335,7 @@ for feature in layer:
     cmd += os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)+ " " 
     cmd += "-compose src " +os.path.join(path_lv95,"difference",outfileName_jpeg)
     os.system(cmd)
-    print ("compare 1")
+    #print ("compare 1")
 
 
     #Compare
@@ -346,7 +345,18 @@ for feature in layer:
     cmd += "-compose src " +os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)
     #print ("*****"+cmd)
     os.system(cmd)
-    print ("compare 2")
+    #print ("compare 2")
+
+
+    cmd = "convert "+os.path.join(path_lv95,"difference",outfileName_jpeg)
+    cmd += " -fill black +opaque srgba(241,0,30,0.8) -fill white -opaque srgba(241,0,30,0.8)"
+    cmd += " -format \"%[fx:mean*100]\" info:"
+    cmd = cmd.split(" ")
+    false_pixel_percent=subprocess.check_output(cmd)
+    false_pixel_percent=false_pixel_percent.replace('\n','')
+    false_pixel_percent_orig=false_pixel_percent.replace('\"','')
+    if float(false_pixel_percent_orig) == 0 :
+        logger_error.error(os.path.join(path_lv95,"difference",outfileName_jpeg)+" weist einen Anteil von 0% falscher Pixelwerte im 0-Toleranz-Bild auf." )
 
     
     # Get percentag of false values
@@ -355,7 +365,7 @@ for feature in layer:
     cmd += "\"srgba(241,0,30,0.8)\""
     cmd += " -format \"false pixel values = %[fx:mean*100] %\"  info:"
     #os.system(cmd)
-
+    
     cmd = "convert "+os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)
     cmd += " -fill black +opaque srgba(241,0,30,0.8) -fill white -opaque srgba(241,0,30,0.8)"
     cmd += " -format \"%[fx:mean*100]\" info:"
@@ -366,17 +376,22 @@ for feature in layer:
     #print repr(false_pixel_percent)
     logger_notice.info("Anteil falscher Pixelwerte: " +false_pixel_percent )
 
-    if float(false_pixel_percent)>=1:
+    if float(false_pixel_percent)>=1 :
       logger_error.error(os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)+" weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: "+false_pixel_percent)
-
-    cmd = "rm " + os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg)
-    os.system(cmd)
-    cmd = "rm " + os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)
-    os.system(cmd)
+    
+    if float(false_pixel_percent_orig) > 0 and float(false_pixel_percent)<1 :
+        cmd = "rm " + os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg)
+        os.system(cmd)
+        cmd = "rm " + os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)
+        os.system(cmd)
+        cmd = "rm " + os.path.join(path_lv95,"difference",outfileName_jpeg)
+        os.system(cmd)
+        cmd = "rm " + os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)
+        os.system(cmd)
 cmd = "rm -r " + os.path.join(path_lv95, "ohne_overviews")
-#os.system(cmd)
+os.system(cmd)
 cmd = "rm -r " + os.path.join(path_lv03, "working")
-#os.system(cmd)
+os.system(cmd)
 #cmd = "rm " + path_lv03 + "/" + orthofilename + ".shp " 
 cmd += path_lv03 + "/" + orthofilename + ".vrt " + path_lv03 + "/" + orthofilename + ".shx " 
 cmd += path_lv03 + "/" + orthofilename + ".prj " + path_lv03 + "/" + orthofilename + ".dbf "
