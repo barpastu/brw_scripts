@@ -12,11 +12,11 @@ import subprocess
 import logging
 
 
-year = "2014"
-year_short = "14"
+year = "2015"
+year_short = "15"
 gsd = "0.125"
 aufloesung="12_5cm"
-colorisation = "rgb"
+colorisation = "cir"
 
 #Settings for RestService
 #proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
@@ -70,15 +70,14 @@ if not os.path.exists(path_lv95 + "/ohne_overviews"):
 
 
 
-
 #Copy files to new folder (working-data)
 if not os.path.exists(path_lv03 + "/working/"):
     os.makedirs(path_lv03 + "/working/")
     for i in os.listdir(path_old_location + "/"):
         if i.endswith(".tif"):
-            cmd = "gdal_translate -of GTiff -co 'TILED=YES' -a_srs EPSG:21781 " +path_old_location + "/"
-            cmd += i + " " + path_lv03 + "/working/" + os.path.basename(i)
-            #cmd = "cp " + path_old_location + "/*.tif " + path_lv03 + "/original/"
+            #cmd = "gdal_translate -of GTiff -co 'TILED=YES' -a_srs EPSG:21781 " +path_old_location + "/"
+            #cmd += i + " " + path_lv03 + "/working/" + os.path.basename(i)
+            cmd = "cp " + path_old_location + "/" + i + " " + path_old_location + "/working/" 
             #print (cmd)
             os.system(cmd)
         #exit()
@@ -130,6 +129,7 @@ cmd += path_lv03 + "/working/*.tif"
 os.system(cmd)
 
 
+
 #Create vrt
 cmd = "gdalbuildvrt " + path_lv03 + "/" + orthofilename + ".vrt " + path_lv03 + "/working/*.tif"
 os.system(cmd)
@@ -172,12 +172,12 @@ for feature in layer:
     cmd += "-co PREDICTOR=2" 
     cmd += " -r " + method + " " + vrt + " " + path_lv95 + "/" + outfileName_jpeg
     os.system(cmd)
-    print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
+    #print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
 
 
     cmd = "gdal_edit.py -a_srs EPSG:2056 " + path_lv95 + "/" +outfileName_jpeg
     os.system(cmd)
-    print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
+    #print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
 
 
     logger_notice.info(path_lv95 + "/" + outfileName_jpeg + " transformiert und zugeschnitten") 
@@ -295,7 +295,7 @@ for feature in layer:
          os.system(cmd)
 
     if int(year)>2012 :
-         cmd = "cp " + os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg) + " "
+         cmd = "mv " + os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg) + " "
          cmd += path_lv03 +"/"
          os.system(cmd)
          cmd = "cp " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " "
@@ -304,7 +304,7 @@ for feature in layer:
          cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", outfileName_jpeg) + " "
          cmd += path_lv95 + "/"
          os.system(cmd)
-         cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg) 
+         cmd = "mv " + os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg) 
          cmd += " " + path_lv95 + "/"
          os.system(cmd)
 
@@ -357,7 +357,9 @@ for feature in layer:
     false_pixel_percent_orig=false_pixel_percent.replace('\"','')
     if float(false_pixel_percent_orig) == 0 :
         logger_error.error(os.path.join(path_lv95,"difference",outfileName_jpeg)+" weist einen Anteil von 0% falscher Pixelwerte im 0-Toleranz-Bild auf." )
-
+        cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
+        cmd += " " + os.path.join(path_lv95,"difference")
+        os.system(cmd)
     
     # Get percentag of false values
     cmd = "convert "+os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)
@@ -377,7 +379,10 @@ for feature in layer:
     logger_notice.info("Anteil falscher Pixelwerte: " +false_pixel_percent )
 
     if float(false_pixel_percent)>=1 :
-      logger_error.error(os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)+" weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: "+false_pixel_percent)
+        logger_error.error(os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)+" weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: "+false_pixel_percent)
+        cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
+        cmd += " " + os.path.join(path_lv95,"difference")
+        os.system(cmd)
     
     if float(false_pixel_percent_orig) > 0 and float(false_pixel_percent)<1 :
         cmd = "rm " + os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg)
@@ -391,11 +396,11 @@ for feature in layer:
 cmd = "rm -r " + os.path.join(path_lv95, "ohne_overviews")
 os.system(cmd)
 cmd = "rm -r " + os.path.join(path_lv03, "working")
-os.system(cmd)
-#cmd = "rm " + path_lv03 + "/" + orthofilename + ".shp " 
+#os.system(cmd)
+cmd = "rm " + path_lv03 + "/" + orthofilename + ".shp " 
 cmd += path_lv03 + "/" + orthofilename + ".vrt " + path_lv03 + "/" + orthofilename + ".shx " 
 cmd += path_lv03 + "/" + orthofilename + ".prj " + path_lv03 + "/" + orthofilename + ".dbf "
-#os.system(cmd)
+os.system(cmd)
 
 logger_notice.info("Ende")
 

@@ -4,7 +4,6 @@
 from osgeo import gdal
 from osgeo import ogr, osr
 import os
-#import urllib2
 import json
 import subprocess
 import logging
@@ -23,11 +22,6 @@ if int(year)>1993 :
     photometric ="RGB"
     photometric_jpeg ="YCBCR"
 
-#Settings for RestService
-#proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
-#auth = urllib2.HTTPBasicAuthHandler()
-#opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
-#urllib2.install_opener(opener)
 
 #Logger for warnings and errors
 logger_error = logging.getLogger('brw_error')
@@ -51,10 +45,18 @@ logger_notice.setLevel(logging.INFO)
 logger_notice.info("Start " + year)
 
 
-#Settings for resampling-methode and vrt-path
+##Settings 
+
+#resampling-method
 method = 'lanczos'
+
+#path to original data
 path_old_location = "/home/barpastu/Geodaten/LV03/ortho" + year_short + "/" + aufloesung + "/" + colorisation
+
+#path to new data
 path_new_location="/home/barpastu/Geodaten/LV95/orthofoto/" + year
+
+#path to vrt
 if int(year)>2002:
     path_lv03_vrt ="/home/barpastu/Geodaten/LV03/ortho" + year_short + "/12_5cm/" + colorisation
 if int(year)==2002:
@@ -119,23 +121,23 @@ for feature in layer:
     outfileName_jpeg = orthofilename + "_5m.tif" 
     infileNameFile_jpeg = outfileName_jpeg
 
-     # Transformieren 
+     # Transformation gsd 12.5cm to 5m
     cmd = "gdalwarp -tr " + gsd + " " + gsd + " "
     cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=" + photometric + " -co TILED=YES "
     cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
     cmd += "-co PREDICTOR=2" 
     cmd += " -r " + method + " " + path_lv03_vrt +"/" + orthofilename+".vrt" + " " 
-    cmd += path_lv03 +"/working/" + infileNameFile_jpeg
+    cmd += path_lv03 +"/" + infileNameFile_jpeg
     os.system(cmd)
     print(cmd)
 
-    # Transformieren 
+    # Transformation LV03 to LV95
     cmd = "gdalwarp -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
     cmd += str(minY) + " " +  str(maxX) + " " +  str(maxY) + " -tr " + gsd + " " + gsd + " "
     cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=" + photometric + " -co TILED=YES "
     cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
     cmd += "-co PREDICTOR=2" 
-    cmd += " -r " + method + " " + path_lv03 +"/working/" + infileNameFile_jpeg + " " + path_lv95 + "/" + outfileName_jpeg
+    cmd += " -r " + method + " " + path_lv03 +"/" + infileNameFile_jpeg + " " + path_lv95 + "/" + outfileName_jpeg
     os.system(cmd)
     print(cmd)
 
@@ -177,22 +179,18 @@ for feature in layer:
     url_ll += "&format=json"
     response_ll = requests.get(url_ll)
     data_ll = response_ll.json()
-    #response_ll = urllib2.urlopen(url_ll)
-    #data_ll = json.load(response_ll)
     xmin_st = data_ll.values()[0]
     ymin_st = data_ll.values()[1]
-    print ("lower left corner")
+
     #Upper right Corner
     url_ur = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting=" 
     url_ur += str(maxX-2000000) + "&northing=" + str(maxY-1000000)
     url_ur +="&format=json"
     response_ur = requests.get(url_ur)
     data_ur = response_ur.json()
-    #response_ur = urllib2.urlopen(url_ur)
-    #data_ur = json.load(response_ur)
     xmax_st = data_ur.values()[0]
     ymax_st = data_ur.values()[1]
-    print ("upper right")
+
     #Ausschnitt generieren LV95
     cmd = "gdalwarp -co PHOTOMETRIC=" + photometric + " -co PROFILE=GeoTIFF -tr " +gsd +" " +gsd + " -te "
     cmd += str(round(float(xmin_st),2)) + " " + str(round(float(ymin_st),2)) + " " 
@@ -202,13 +200,12 @@ for feature in layer:
     cmd += vrt_95 + " "     
     cmd += os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
     os.system(cmd)
-    print ("ausschnitt lv95")
-    #print (cmd + " erledigt") 
+
     #Ausschnitt generieren LV03
     cmd = " gdalwarp -co PHOTOMETRIC=" + photometric + " -co TILED=YES -co PROFILE=GeoTIFF -tr " +gsd +" " +gsd
     cmd += " -te " + str(minX-2000000) + " " + str(minY-1000000) + " " 
     cmd += str(maxX-2000000) + " " + str(maxY-1000000) + " "
-    cmd += os.path.join(path_lv03, "working",infileNameFile_jpeg) + " " 
+    cmd += os.path.join(path_lv03,infileNameFile_jpeg) + " " 
     cmd += os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg)
     os.system(cmd)
     print(cmd)
@@ -217,7 +214,7 @@ for feature in layer:
 
          cmd = "gdal_translate -co COMPRESS=JPEG -co TILED=YES -co PHOTOMETRIC=" 
          cmd += photometric_jpeg + " "
-         cmd += os.path.join(path_lv03,"working", infileNameFile_jpeg) + " " 
+         cmd += os.path.join(path_lv03, infileNameFile_jpeg) + " " 
          cmd += os.path.join(path_lv03, infileNameFile_jpeg)
          os.system(cmd)
 
@@ -242,7 +239,7 @@ for feature in layer:
     if int(year)>2012 :
          cmd = "cp " + os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg) + " "
          cmd += path_lv03 +"/"
-         os.system(cmd)
+         #os.system(cmd)
          print ("cp 1")
          cmd = "cp " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " "
          cmd += path_lv03 + "/"
@@ -254,7 +251,7 @@ for feature in layer:
          print ("cp 3")
          cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg) 
          cmd += " " + path_lv95 + "/"
-         os.system(cmd)
+         #os.system(cmd)
          print ("cp 4")
 
 
@@ -287,8 +284,8 @@ if int(year)<=2012:
 
     #Compare
 cmd = "compare " 
-cmd += os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg) + " " 
-cmd += os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)+ " " 
+cmd += os.path.join(path_lv03, "working","ausschnitt_"+infileNameFile_jpeg) + " " 
+cmd += os.path.join(path_lv95, "ohne_overviews","ausschnitt_"+outfileName_jpeg)+ " " 
 cmd += "-compose src " +os.path.join(path_lv95,"difference",outfileName_jpeg)
 os.system(cmd)
     #print ("compare 1")
@@ -296,13 +293,25 @@ os.system(cmd)
 
     #Compare
 cmd = "compare -fuzz 10% " 
-cmd +=os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg) + " " 
-cmd += os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)+ " " 
+cmd +=os.path.join(path_lv03, "working","ausschnitt_"+infileNameFile_jpeg) + " " 
+cmd += os.path.join(path_lv95, "ohne_overviews","ausschnitt_"+outfileName_jpeg)+ " " 
 cmd += "-compose src " +os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)
     #print ("*****"+cmd)
 os.system(cmd)
     #print ("compare 2")
 
+cmd = "convert "+os.path.join(path_lv95,"difference",outfileName_jpeg)
+cmd += " -fill black +opaque srgba(241,0,30,0.8) -fill white -opaque srgba(241,0,30,0.8)"
+cmd += " -format \"%[fx:mean*100]\" info:"
+cmd = cmd.split(" ")
+false_pixel_percent=subprocess.check_output(cmd)
+false_pixel_percent=false_pixel_percent.replace('\n','')
+false_pixel_percent_orig=false_pixel_percent.replace('\"','')
+if float(false_pixel_percent_orig) == 0 :
+    logger_error.error(os.path.join(path_lv95,"difference",outfileName_jpeg)+" weist einen Anteil von 0% falscher Pixelwerte im 0-Toleranz-Bild auf." )
+    cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
+    cmd += " " + os.path.join(path_lv95,"difference")
+    os.system(cmd)
     
     # Get percentag of false values
 cmd = "convert "+os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)
@@ -322,20 +331,24 @@ false_pixel_percent=false_pixel_percent.replace('\"','')
 logger_notice.info("Anteil falscher Pixelwerte: " +false_pixel_percent )
 
 if float(false_pixel_percent)>=1:
-   logger_error.error(os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)+" weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: "+false_pixel_percent)
+    logger_error.error(os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)+" weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: "+false_pixel_percent)
+    cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
+    cmd += " " + os.path.join(path_lv95,"difference")
+    os.system(cmd)
+if float(false_pixel_percent_orig) > 0 and float(false_pixel_percent)<1 :
+    cmd = "rm " + os.path.join(path_lv03, "working","ausschnitt_"+infileNameFile_jpeg)
+    os.system(cmd)
+    cmd = "rm " + os.path.join(path_lv95,"ohne_overviews", "ausschnitt_"+outfileName_jpeg)
+    os.system(cmd)
 
-cmd = "rm " + os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg)
-os.system(cmd)
-cmd = "rm " + os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)
-os.system(cmd)
 cmd = "rm -r " + os.path.join(path_lv95, "ohne_overviews")
-#os.system(cmd)
+os.system(cmd)
 cmd = "rm -r " + os.path.join(path_lv03, "working")
 #os.system(cmd)
-#cmd = "rm " + path_lv03 + "/" + orthofilename + ".shp " 
+cmd = "rm " + path_lv03 + "/" + orthofilename + ".shp " 
 cmd += path_lv03 + "/" + orthofilename + ".vrt " + path_lv03 + "/" + orthofilename + ".shx " 
 cmd += path_lv03 + "/" + orthofilename + ".prj " + path_lv03 + "/" + orthofilename + ".dbf "
-#os.system(cmd)
+os.system(cmd)
 
 logger_notice.info("Ende")
 
