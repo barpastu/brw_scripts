@@ -14,7 +14,7 @@ year = "2015"
 year_short = "15"
 gsd = "5.000"
 aufloesung="5_m"
-colorisation = "rgb"
+colorisation = "cir"
 if int(year)==1993 :
     photometric = "MINISBLACK"
     photometric_jpeg = "MINISBLACK"
@@ -90,6 +90,9 @@ T_SRS = "+proj=somerc +lat_0=46.952405555555555N +lon_0=7.439583333333333E +ellp
 
 ogr.UseExceptions() 
 
+#Create vrt
+cmd = "gdalbuildvrt " + path_lv03_vrt + "/" + orthofilename + ".vrt " + path_lv03_vrt + "/*.tif"
+os.system(cmd)
 
 #Create Tileindex
 cmd = "gdaltindex -write_absolute_path " + path_lv03 + "/" + orthofilename + ".shp " 
