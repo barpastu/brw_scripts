@@ -14,7 +14,7 @@ year = "2015"
 year_short = "15"
 gsd = "5.000"
 aufloesung="5_m"
-colorisation = "rgb"
+colorisation = "cir"
 if int(year)==1993 :
     photometric = "MINISBLACK"
     photometric_jpeg = "MINISBLACK"
@@ -108,6 +108,10 @@ cmd += path_lv95 + "/ohne_overviews/" + orthofilename + "_white.tif "
 cmd += path_lv95 + "/ohne_overviews/" + orthofilename + ".vrt "
 os.system(cmd) 
 
+#cmd = "gdalbuildvrt " + path_lv95+ "/ohne_overviews/" + orthofilename + ".vrt " 
+#cmd += path_new_location + "/"+colorisation +"/12_5cm/*.tif"
+#os.system(cmd)
+
 #Create Tileindex
 cmd = "gdaltindex -write_absolute_path " + path_lv95 + "/ohne_overviews/" + orthofilename + ".shp " 
 cmd += path_lv95 + "/ohne_overviews/"  + orthofilename+".vrt"
@@ -157,7 +161,7 @@ for feature in layer:
 
     logger_notice.info(path_lv95 + "/" + outfileName_jpeg + " transformiert und zugeschnitten") 
 
-    exit()
+    
     
     # Files in anderen Ordner kopieren
     cmd ="cp " + path_lv95 + "/" +outfileName_jpeg + " " + path_lv95 + "/ohne_overviews/"
@@ -275,6 +279,30 @@ for feature in layer:
         cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE --config PHOTOMETRIC_OVERVIEW YCBCR " 
         cmd += "--config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
         os.system(cmd)
+
+
+
+
+#print ("***********************************")
+##Create vrt
+#cmd = "gdalbuildvrt -addalpha " + path_lv95+ "/ohne_overviews/" + orthofilename + "_alpha.vrt " 
+#cmd += path_lv95 +"/" + infileNameFile_jpeg
+#os.system(cmd)
+#print(cmd)
+
+##set color of nodata-values from black to white
+#cmd ="gdalwarp -dstnodata '255,255,255' " 
+#cmd += path_lv95 + "/ohne_overviews/" + orthofilename + "_alpha.vrt " 
+#cmd += path_lv95 + "/ohne_overviews/" + orthofilename + "_white.tif "
+#os.system(cmd)
+#print (cmd)
+
+##extract color-bands
+#cmd ="gdal_translate " 
+#cmd += path_lv95 + "/ohne_overviews/" + orthofilename + "_white.tif " 
+#cmd += path_lv95 + "/test_" + orthofilename + ".tif "
+#os.system(cmd) 
+#print (cmd)
 
 
     #generate Overviews for newly compressed lv03-Tiles 

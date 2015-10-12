@@ -11,8 +11,8 @@ import subprocess
 import logging
 
 
-year = "2014"
-year_short = "14"
+year = "2013"
+year_short = "13"
 gsd = "0.125"
 aufloesung="12_5cm"
 colorisation = "rgb"
@@ -88,7 +88,7 @@ if not os.path.exists(path_lv03 + "/working/"):
     for i in os.listdir(path_old_location + "/"):
         if i.endswith(".tif"):
 			#Stich together if geotiff is splitted up to tif and tfw
-			if int(year)<2014 :
+            if int(year)<2014 :
                 cmd = "gdal_translate -of GTiff -co 'TILED=YES' -a_srs EPSG:21781 " +path_old_location + "/"
                 cmd += i + " " + path_old_location  + "/working/" + os.path.basename(i)
             else :
