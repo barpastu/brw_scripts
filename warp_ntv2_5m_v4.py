@@ -14,7 +14,7 @@ year = "2015"
 year_short = "15"
 gsd = "5.000"
 aufloesung="5_m"
-colorisation = "cir"
+colorisation = "rgb"
 if int(year)==1993 :
     photometric = "MINISBLACK"
     photometric_jpeg = "MINISBLACK"
@@ -79,6 +79,8 @@ if not os.path.exists(path_lv95 + "/difference"):
     os.makedirs(path_lv95 + "/difference")
 if not os.path.exists(path_lv95 + "/ohne_overviews"):
     os.makedirs(path_lv95 + "/ohne_overviews")
+if not os.path.exists(path_lv95 + "/3_Kanal"):
+    os.makedirs(path_lv95 + "/3_Kanal")
 if not os.path.exists(path_lv03 + "/working/"):
     os.makedirs(path_lv03 + "/working/")
 
@@ -92,12 +94,17 @@ ogr.UseExceptions()
 
 #Create vrt
 cmd = "gdalbuildvrt -addalpha " + path_lv95+ "/ohne_overviews/" + orthofilename + "_alpha.vrt " 
-cmd += path_new_location + "/"+colorisation +"/12_5cm/*.tif"
+cmd += path_new_location + "/"+colorisation +"/12_5cm/*.tif "
+#cmd += path_lv95+ "/ohne_overviews/" + orthofilename + "_alpha.vrt "
 os.system(cmd)
 print(cmd)
 
 #set color of nodata-values from black to white
-cmd ="gdalwarp -dstnodata '255,255,255' " 
+cmd ="gdalwarp -tr " + gsd + " " + gsd + " "
+cmd += "-wo NUM_THREADS=ALL_CPUS -co TILED=YES "
+cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
+cmd += "-co PREDICTOR=2" 
+cmd += " -r " + method +" "
 cmd += path_lv95 + "/ohne_overviews/" + orthofilename + "_alpha.vrt " 
 cmd += path_lv95 + "/ohne_overviews/" + orthofilename + "_white.tif "
 os.system(cmd)
@@ -145,7 +152,7 @@ for feature in layer:
 
      # Transformation gsd 12.5cm to 5m
     cmd = "gdalwarp -tr " + gsd + " " + gsd + " "
-    cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=" + photometric + " -co TILED=YES "
+    cmd += "-wo NUM_THREADS=ALL_CPUS -co TILED=YES "
     cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
     cmd += "-co PREDICTOR=2" 
     cmd += " -r " + method + " " + path_lv95 +"/ohne_overviews/" + orthofilename+".vrt" + " " 
@@ -266,18 +273,22 @@ for feature in layer:
     #     outfileName =outfileName_jpeg
     #     outfileNamePath = outfileNamePath_jpeg
 
-
+  
+    # Remove Band 4
+    cmd = "gdal_translate -b 1 -b 2 -b 3 " + path_lv95 + "/" + outfileName_jpeg + path_lv95 + "/3_Kanal/" + outfileName_jpeg 
+    os.system(cmd)
+    
     # generate Overviews 
     if int(year)<=2012 :
         cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE --config PHOTOMETRIC_OVERVIEW " 
-        cmd += photometric_jpeg + "  --config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
+        cmd += photometric_jpeg + "  --config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/3_Kanal/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
         os.system(cmd) 
         #print("overviews generieren")
-        print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
+        print(os.path.getsize(path_lv95 + "/3_Kanal/" + outfileName_jpeg))
         
     if int(year) > 2012:
         cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE --config PHOTOMETRIC_OVERVIEW YCBCR " 
-        cmd += "--config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
+        cmd += "--config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/3_Kanal/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
         os.system(cmd)
 
 
