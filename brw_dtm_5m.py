@@ -13,10 +13,15 @@ import logging
 
 year = "2014"
 year_short = "14"
-theme = "dtm_relief"
+theme = "ndom"
 gsd = "5.00"
 aufloesung="500_cm"
 colorisation = "gray"
+gsd_original ="50_cm"
+if colorisation is "rgb":
+    photometric_color="YCBCR"
+if colorisation is "gray":
+    photometric_color="MINISBLACK"
 
 #Settings for RestService
 proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
@@ -52,16 +57,19 @@ logger_notice.info("Start Lidar " + theme + " " + year + " " + gsd)
 method = 'lanczos'
 
 #path to the data on the old storage
-path_new_location="lidar/"  + year + "/" + theme 
+path_old_location= "lv03/lidar/" + year + "/" + theme
+
+#path to the data on the new storage
+path_new_location= "lv95/lidar/" + year + "/" + theme
 
 #path to the data of gsd 50 cm on the new storage
-path_lv03_50 = path_new_location + "/lv03/" + colorisation + "/50_cm"
+path_lv95_50 = path_new_location + "/" + colorisation + "/" + gsd_original
 
 #path to the data on the new storage (LV03)
-path_lv03 =  path_new_location + "/lv03/"+ colorisation + "/" + aufloesung 
+path_lv03 =  path_new_location + "/"+ colorisation + "/" + aufloesung 
 
 #path to the data on the new storage (LV95)
-path_lv95 = path_new_location + "/lv95/"+ colorisation + "/" + aufloesung 
+path_lv95 = path_new_location + "/"+ colorisation + "/" + aufloesung 
 
 #Filename of the vrt
 orthofilename = theme + "_5m_"+year
@@ -92,7 +100,26 @@ T_SRS = "+proj=somerc +lat_0=46.952405555555555N +lon_0=7.439583333333333E +ellp
 ogr.UseExceptions() 
 
 #Create vrt LV95 (50_cm)
-cmd = "gdalbuildvrt " + path_lv03 + "/" + orthofilename + "_50.vrt " + path_lv03_50 + "/*.tif"
+#cmd = "gdalbuildvrt " + path_lv03 + "/" + orthofilename + "_50.vrt " + path_lv03_50 + "/*.tif"
+#os.system(cmd)
+
+#add alphaband for extracting nodata-values
+cmd = "gdalbuildvrt -addalpha " + path_lv03 + "/" + orthofilename + "_alpha.vrt " + path_lv95_50 + "/*.tif"
+os.system(cmd)
+
+#set color of nodata-values from black to white
+cmd ="gdalwarp -tr " + gsd + " " + gsd + " " 
+cmd += "-wo NUM_THREADS=ALL_CPUS -co ALPHA=YES -co TILED=YES "
+cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
+cmd += "-co PREDICTOR=2" 
+cmd += " -r " + method + " "
+cmd += path_lv03 + "/" + orthofilename + "_alpha.vrt " 
+cmd += path_lv03 + "/" + orthofilename + "_white.tif "
+os.system(cmd)
+print ("*******" + cmd +"********")
+
+#extract grey-band
+cmd ="gdal_translate " + path_lv03 + "/" + orthofilename + "_white.tif " + path_lv03 + "/" + orthofilename + "_50.vrt "
 os.system(cmd)
 
 
@@ -126,26 +153,15 @@ for feature in layer:
     outfileName_jpeg = orthofilename + "_5m.tif" 
     infileNameFile_jpeg = outfileName_jpeg
 
+
     # transformation to gsd = 5 m
     cmd = "gdalwarp -tr " + gsd + " " + gsd + " "
-    cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=MINISBLACK -co TILED=YES "
-    cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
+    cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC="+ photometric_color + " -co TILED=YES "
+    cmd += "-co PROFILE=GeoTIFF -co ALPHA=YES -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
     cmd += "-co PREDICTOR=2" 
     cmd += " -r " + method + " " + path_lv03 + "/"  + orthofilename+"_50.vrt" + " "
-    cmd += path_lv03 + "/" + infileNameFile_jpeg
+    cmd += path_lv95 + "/" + outfileName_jpeg
     os.system(cmd)
-
-
-
-    # transformieren from LV03 to LV95
-    cmd = "gdalwarp -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
-    cmd += str(minY) + " " +  str(maxX) + " " +  str(maxY) + " -tr " + gsd + " " + gsd + " "
-    cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=MINISBLACK -co TILED=YES "
-    cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
-    cmd += "-co PREDICTOR=2" 
-    cmd += " -r " + method + " " + path_lv03 +"/" + infileNameFile_jpeg + " " + path_lv95 + "/" + outfileName_jpeg
-    os.system(cmd)
-
 
 
     cmd = "gdal_edit.py -a_srs EPSG:2056 " + path_lv95 + "/" +outfileName_jpeg
@@ -198,7 +214,7 @@ for feature in layer:
         ymax_st = data_ur.values()[1]
 
         #Ausschnitt generieren LV95
-        cmd = "gdalwarp -co PHOTOMETRIC=MINISBLACK -co PROFILE=GeoTIFF -tr " + gsd + " " + gsd + " -te "
+        cmd = "gdalwarp -co PHOTOMETRIC=" + photometric_color + " -co PROFILE=GeoTIFF -tr " + gsd + " " + gsd + " -te "
         cmd += str(round(float(xmin_st),2)) + " " + str(round(float(ymin_st),2)) + " " 
         cmd += str(round(float(xmax_st),2)) + " " + str(round(float(ymax_st),2)) 
         cmd += " -co TILED=YES -r " + method + " " 
@@ -209,7 +225,7 @@ for feature in layer:
 
         print (cmd + " erledigt") 
         #Ausschnitt generieren LV03
-        cmd = " gdalwarp -co PHOTOMETRIC=MINISBLACK -co TILED=YES -co PROFILE=GeoTIFF -tr " + gsd + " " + gsd
+        cmd = " gdalwarp -co PHOTOMETRIC=" + photometric_color + " -co TILED=YES -co PROFILE=GeoTIFF -tr " + gsd + " " + gsd
         cmd += " -te " + str(middleX-height_extract) + " " + str(middleY-height_extract) + " " 
         cmd += str(middleX+height_extract) + " " + str(middleY+height_extract) + " "
         cmd +=os.path.join(path_lv03, infileNameFile_jpeg) + " " 
@@ -221,12 +237,12 @@ for feature in layer:
         if int(year)<=2012 :
 
              cmd = "gdal_translate -co COMPRESS=JPEG -co TILED=YES "
-             cmd += os.path.join(path_lv03, infileNameFile_jpeg) + " " 
+             cmd += os.path.join(path_lv03, "working",infileNameFile_jpeg) + " " 
              cmd += os.path.join(path_lv03, infileNameFile_jpeg)
              os.system(cmd)
 
              cmd = "gdal_translate -co COMPRESS=JPEG -co TILED=YES " 
-             cmd += os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg) + " "
+             cmd += os.path.join(path_lv03,"working", "ausschnitt_"+infileNameFile_jpeg) + " "
              cmd += os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg)
              os.system(cmd)
 
@@ -246,7 +262,7 @@ for feature in layer:
              os.system(cmd)
              cmd = "cp " + os.path.join(path_lv03, infileNameFile_jpeg) + " "
              cmd += path_lv03 + "/"
-             os.system(cmd)
+             #os.system(cmd)
              cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", outfileName_jpeg) + " "
              cmd += path_lv95 + "/"
              os.system(cmd)

@@ -12,7 +12,7 @@ import logging
 
 
 year = "2014"
-theme = "dtm_relief"
+theme = "ndom"
 gsd = "0.50"
 aufloesung="50_cm"
 colorisation = "gray"
@@ -49,15 +49,17 @@ logger_notice.info("Start Lidar " + theme + " " + year)
 
 #resampling-method
 if theme is "dtm" :
-    method = 'bilinear'
+    #method = 'bilinear'
+    method = 'lanczos'
 if theme is "dom" :
-    method = 'near'
+    #method = 'near'
+    method = 'lanczos'
 if theme is "domdiff2001" :
-    method = 'near'
+    method = 'near'   #lanczos problematisch aufgrund abrupter Höhenänderungen z.B. Baum / kein Baum
 if theme is "hangneigung" :
-    method = 'near'
+    method = 'lanczos'
 if theme is "ndom" :
-    method = 'near'
+    method = 'lanczos'   #verschlirgt etwas
 if theme is "dom_relief" :
     method = 'lanczos'
 if theme is "dtm_relief" :
@@ -66,13 +68,17 @@ if theme is "dtm_relief" :
 #path_old_location = "lidar" + year + "/" + theme + "/" + aufloesung
 
 #path to the data on the old storage
-path_new_location="lidar/"  + year + "/" + theme 
+path_new_location="lv95/lidar/"  + year + "/" + theme 
+
+#path to the data on the old storage
+path_old_location="lv03/lidar/"  + year + "/" + theme 
+
 
 #path to the data on the new storage (LV03)
-path_lv03 = path_new_location + "/lv03/"+ colorisation + "/" + aufloesung 
+path_lv03 = path_old_location + "/"+ colorisation + "/" + aufloesung 
 
 #path to the data on the new storage (LV95)
-path_lv95 = path_new_location + "/lv95/"+ colorisation + "/" + aufloesung 
+path_lv95 = path_new_location + "/"+ colorisation + "/" + aufloesung 
 
 #Filename of the vrt
 orthofilename = theme+"_"+year

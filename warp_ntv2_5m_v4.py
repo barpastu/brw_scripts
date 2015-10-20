@@ -10,11 +10,11 @@ import logging
 import requests
 
 
-year = "2015"
-year_short = "15"
+year = "2013"
+year_short = "13"
 gsd = "5.000"
 aufloesung="5_m"
-colorisation = "rgb"
+colorisation = "cir"
 if int(year)==1993 :
     photometric = "MINISBLACK"
     photometric_jpeg = "MINISBLACK"
@@ -273,22 +273,18 @@ for feature in layer:
     #     outfileName =outfileName_jpeg
     #     outfileNamePath = outfileNamePath_jpeg
 
-  
-    # Remove Band 4
-    cmd = "gdal_translate -b 1 -b 2 -b 3 " + path_lv95 + "/" + outfileName_jpeg + path_lv95 + "/3_Kanal/" + outfileName_jpeg 
-    os.system(cmd)
     
     # generate Overviews 
     if int(year)<=2012 :
         cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE --config PHOTOMETRIC_OVERVIEW " 
-        cmd += photometric_jpeg + "  --config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/3_Kanal/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
+        cmd += photometric_jpeg + "  --config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
         os.system(cmd) 
         #print("overviews generieren")
-        print(os.path.getsize(path_lv95 + "/3_Kanal/" + outfileName_jpeg))
+        print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
         
     if int(year) > 2012:
         cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE --config PHOTOMETRIC_OVERVIEW YCBCR " 
-        cmd += "--config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/3_Kanal/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
+        cmd += "--config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
         os.system(cmd)
 
 

@@ -47,10 +47,10 @@ logger_notice.info("Start " + year)
 
 #Settings for resampling-methode and vrt-path
 method = 'lanczos'
-path_old_location = "drohnenbilder"
-path_new_location="drohnenbilder/" + year + "_" + month
-path_lv03 = path_new_location + "/lv03" 
-path_lv95 = path_new_location + "/lv95"
+path_old_location = "lv03/drohnenbilder/" + year + "_" + month
+path_new_location="lv95/drohnenbilder/" + year + "_" + month
+path_lv03 = path_old_location
+path_lv95 = path_new_location
 orthofilename = "ortho_drohne_"+year + "_" +month
 vrt = path_lv03 + "/" + orthofilename+".vrt"
 vrt_95 = path_lv95 + "/ohne_overviews/" +orthofilename+".vrt"
@@ -72,22 +72,20 @@ if not os.path.exists(path_lv95 + "/ohne_overviews"):
     os.makedirs(path_lv95 + "/ohne_overviews")
 
 
-#Copy files to new folder (original-data)
-if not os.path.exists(path_lv03 + "/original/"):
-    os.makedirs(path_lv03 + "/original/")
-    for i in os.listdir(path_old_location + "/"):
-        if i.endswith(".tif"):
-            cmd = "gdal_translate -of GTiff -co 'TILED=YES' -a_srs EPSG:21781 " +path_old_location
-            cmd += "/" + i + " " + path_lv03 + "/original/" + os.path.basename(i)
-            os.system(cmd)
-
-
-
-#Copy files to working folder (working-data)
+#Copy files to new folder (working-data)
 if not os.path.exists(path_lv03 + "/working/"):
     os.makedirs(path_lv03 + "/working/")
-    cmd = "cp " + path_lv03 + "/original/*.tif " + path_lv03 + "/working/"
-    os.system(cmd)
+    for i in os.listdir(path_old_location + "/"):
+        if i.endswith(".tif"):
+			#Stich together if geotiff is splitted up to tif and tfw
+            if int(year)<2014 :
+                cmd = "gdal_translate -of GTiff -co 'TILED=YES' -a_srs EPSG:21781 " +path_old_location + "/"
+                cmd += i + " " + path_old_location  + "/working/" + os.path.basename(i)
+            else :
+                cmd = "cp " + path_old_location + "/" + i + " " + path_old_location + "/working/" + i
+            print (cmd)
+            os.system(cmd)
+        #exit()
 
 
 

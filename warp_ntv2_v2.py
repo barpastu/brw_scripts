@@ -146,7 +146,7 @@ os.system(cmd)
 
 
 #Create vrt of lv03-data
-cmd = "gdalbuildvrt " + path_lv03 + "/" + orthofilename + ".vrt " + path_lv03 + "/working/*.tif"
+cmd = "gdalbuildvrt -addalpha " + path_lv03 + "/" + orthofilename + ".vrt " + path_lv03 + "/working/*.tif"
 os.system(cmd)
 
 
@@ -180,7 +180,7 @@ for feature in layer:
 
 
     # transformation lv03 to lv95
-    cmd = "gdalwarp -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
+    cmd = "gdalwarp -co ALPHA=YES -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
     cmd += str(minY) + " " +  str(maxX) + " " +  str(maxY) + " -tr " + gsd + " " + gsd + " "
     cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=RGB -co TILED=YES "
     cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
@@ -220,33 +220,37 @@ for feature in layer:
     geom = feature.GetGeometryRef()
     env = geom.GetEnvelope()
 
-    minX = int(env[0] + 0.001 + 2000000)
-    minY = int(env[2] + 0.001 + 1000000)
-    maxX = int(env[1] + 0.001 + 2000000)
-    maxY = int(env[3] + 0.001 + 1000000)
+    minX = int(env[0] + 0.001 )
+    minY = int(env[2] + 0.001 )
+    maxX = int(env[1] + 0.001 )
+    maxY = int(env[3] + 0.001 )
 
-    middleX = (int(env[0] + 0.001)+int(env[1] + 0.001 ))/2
-    middleY = (int(env[2] + 0.001)+int(env[3] + 0.001 ))/2
+    middleX = (int(minX + 0.001)+int(maxX + 0.001 ))/2
+    middleY = (int(minY + 0.001)+int(maxY + 0.001 ))/2
     
-    infileNameFile_jpeg = str(minX)[1:4] + str(minY)[1:4] + "_"+aufloesung+".tif"   
-    outfileName_jpeg = str(minX)[0:4] + str(minY)[0:4] + "_"+aufloesung+".tif" 
+    infileNameFile_jpeg = str(minX)[0:3] + str(minY)[0:3] + "_"+aufloesung+".tif"   
+    outfileName_jpeg = "2" + str(minX)[0:3] + "1" + str(minY)[0:3] + "_"+aufloesung+".tif" 
     
     #Create URL for RestService 
-    #Lower left Corner (gets transformed coordinates from reframe)
+    #Lower left Corner
     url_ll = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting="
-    url_ll += str(middleX - height_extract) + "&northing=" + str(middleY - height_extract) 
+    url_ll += str(minX) + "&northing=" + str(minY) 
     url_ll += "&format=json"
     response_ll = requests.get(url_ll)
     data_ll = response_ll.json()
+    #response_ll = urllib2.urlopen(url_ll)
+    #data_ll = json.load(response_ll)
     xmin_st = data_ll.values()[0]
     ymin_st = data_ll.values()[1]
-    
-    #Upper right Corner (gets transformed coordinates from reframe)
+
+    #Upper right Corner
     url_ur = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting=" 
-    url_ur += str(middleX + height_extract) + "&northing=" + str(middleY + height_extract)
+    url_ur += str(maxX) + "&northing=" + str(maxY)
     url_ur +="&format=json"
     response_ur = requests.get(url_ur)
     data_ur = response_ur.json()
+    #response_ur = urllib2.urlopen(url_ur)
+    #data_ur = json.load(response_ur)
     xmax_st = data_ur.values()[0]
     ymax_st = data_ur.values()[1]
 
@@ -261,8 +265,8 @@ for feature in layer:
 
     #Ausschnitt generieren LV03
     cmd = " gdalwarp -co PHOTOMETRIC=RGB -co TILED=YES -co PROFILE=GeoTIFF -tr " + gsd + " " + gsd
-    cmd += " -te " + str(middleX-height_extract) + " " + str(middleY-height_extract) + " " 
-    cmd += str(middleX+height_extract) + " " + str(middleY+height_extract) + " "
+    cmd += " -te " + str(minX) + " " + str(minY) + " " 
+    cmd += str(maxX) + " " + str(maxY) + " "
     cmd +=os.path.join(path_lv03,"working", infileNameFile_jpeg) + " " 
     cmd +=os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg)
     os.system(cmd)
@@ -433,7 +437,6 @@ cmd = "rm -r " + os.path.join(path_lv03, "working")
 cmd = "rm " + path_lv03 + "/" + orthofilename + ".shp " 
 cmd += path_lv03 + "/" + orthofilename + ".vrt " + path_lv03 + "/" + orthofilename + ".shx " 
 cmd += path_lv03 + "/" + orthofilename + ".prj " + path_lv03 + "/" + orthofilename + ".dbf "
-os.system(cmd)
+#os.system(cmd)
 
 logger_notice.info("Ende")
-
