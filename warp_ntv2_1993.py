@@ -5,26 +5,28 @@
 from osgeo import gdal
 from osgeo import ogr, osr
 import os
-import urllib2
+#import urllib2
 import json
 import subprocess
 import logging
+import requests
 
 
 year = "1993"
+year_short="93"
 gsd = "0.70"
-aufloesung="70_cm"
-colorisation = "gray"
+aufloesung="70cm"
+colorisation = "sw"
 
 #Settings for RestService
-proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
-auth = urllib2.HTTPBasicAuthHandler()
-opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
-urllib2.install_opener(opener)
+#proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
+#auth = urllib2.HTTPBasicAuthHandler()
+#opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
+#urllib2.install_opener(opener)
 
 #Logger for warnings and errors
 logger_error = logging.getLogger('brw_error')
-handler_error = logging.FileHandler('log_brw_error.log')
+handler_error = logging.FileHandler('log_brw_error_1993.log')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 handler_error.setFormatter(formatter)
 logger_error.addHandler(handler_error) 
@@ -32,7 +34,7 @@ logger_error.setLevel(logging.WARNING)
 
 #Logger for notices
 logger_notice = logging.getLogger('brw')
-handler_notice = logging.FileHandler('log_brw.log')
+handler_notice = logging.FileHandler('log_brw_1993.log')
 handler_notice.setFormatter(formatter)
 logger_notice.addHandler(handler_notice) 
 logger_notice.setLevel(logging.INFO)
@@ -45,15 +47,31 @@ logger_notice.info("Start " + year)
 
 
 #Settings for resampling-methode and vrt-path
+#resampling-methode
 method = 'bilinear'
-path_old_location = "ortho_" + year + "/" + aufloesung + "/" + colorisation
-path_new_location="Orthofoto/" + year
-path_lv03 = path_new_location + "/lv03/"+ colorisation + "/" + aufloesung 
-path_lv95 = path_new_location + "/lv95/"+ colorisation + "/" + aufloesung 
+
+#path to LV03-Data
+path_old_location = "/home/barpastu/Geodaten/LV03/ortho" + year_short + "/" + aufloesung + "/" + colorisation
+
+#path to LV95-Data (without colorisation and resolution)
+path_new_location="/home/barpastu/Geodaten/LV95/orthofoto/" + year
+
+#path to LV03-Data
+path_lv03 = path_old_location 
+
+#path to LV95-Data
+path_lv95 = path_new_location + "/"+ colorisation + "/" + aufloesung 
+
+#Filename of vrt
 orthofilename = "ortho"+year
+
+#path to lv03-vrt
 vrt = path_lv03 + "/" + orthofilename+".vrt"
+
+#path to lv95-vrt
 vrt_95 = path_lv95 + "/ohne_overviews/" +orthofilename+".vrt"
-height_extract = 500
+
+#settings for check
 vrt_exists = False
 
 
@@ -68,30 +86,42 @@ if not os.path.exists(path_lv95 + "/ohne_overviews"):
 
 
 #Copy files to new folder (original-data)
-if not os.path.exists(path_lv03 + "/original/"):
-    os.makedirs(path_lv03 + "/original/")
+if not os.path.exists(path_lv03 + "/working/"):
+    os.makedirs(path_lv03 + "/working/")
     for i in os.listdir(path_old_location + "/"):
         if i.endswith(".tif"):
             cmd = "gdal_translate -of GTiff -co 'TILED=YES' -a_srs EPSG:21781 " +path_old_location + "/"
-            cmd += i + " " + path_lv03 + "/original/" + os.path.basename(i)
+            cmd += i + " " + path_lv03 + "/working/" + os.path.basename(i)
             os.system(cmd)
         
 
 
-#Copy files to working folder (working-data)
-if not os.path.exists(path_lv03 + "/working/"):
-    os.makedirs(path_lv03 + "/working/")
-    cmd = "cp " + path_lv03 + "/original/*.tif " + path_lv03 + "/working/"
-    os.system(cmd)
-
-
-
-
 #Remove overviews
 for i in os.listdir(path_lv03 + "/working/"):
-    cmd = "gdal_translate -of GTiff -co 'TILED=YES' " + path_lv03+ "/original/" + os.path.basename(i) + " " + path_lv03 + "/working/" + i 
-    os.system(cmd)
+    #cmd = "gdal_translate -of GTiff -co 'TILED=YES' " + path_lv03+ "/original/" + os.path.basename(i) + " " + i 
+    #os.system(cmd)
+    if i.endswith(".tif"):
+        cmd = "gdaladdo -clean " + path_lv03 + "/working/" +i
+        os.system(cmd)
+        #print cmd
+        continue
+    else:
+        continue
 
+    infileNameFile_jpeg=os.path.basename(i)
+
+    #Minimize tiff-files
+
+    #Splits up the tiff-file (to decrease the file size (without overviews))
+    cmd = "tiffsplit " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " /home/barpastu/Geodaten/working/tmp-"
+    os.system(cmd)
+    # Duplicate the geotransform and projection metadata from one raster dataset to another
+    cmd = "python gdalcopyproj.py " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " /home/barpastu/Geodaten/working/tmp-aaa.tif"
+    os.system(cmd)
+    cmd = "mv /home/barpastu/Geodaten/working/tmp-aaa.tif "+ os.path.join(path_lv03,"working", infileNameFile_jpeg)
+    os.system(cmd)
+    #cmd = "rm tmp-???.tif"
+    #os.system(cmd)
 
 
 #Definition of spatial reference systems
@@ -181,7 +211,7 @@ for feature in layer:
 
 
     # Transformieren 
-    cmd = "gdalwarp -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
+    cmd = "gdalwarp  -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
     cmd += str(minY) + " " +  str(maxX) + " " +  str(maxY) + " -tr " + gsd + " " + gsd + " "
     cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=MINISBLACK -co TILED=YES "
     cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
@@ -231,37 +261,40 @@ layer = shp.GetLayer(0)
 # Do for each tile
 for feature in layer:
     infileName = feature.GetField('location')
-    #print infileName
     geom = feature.GetGeometryRef()
     env = geom.GetEnvelope()
 
-    minX = int(env[0] + 0.001 + 2000000)
-    minY = int(env[2] + 0.001 + 1000000)
-    maxX = int(env[1] + 0.001 + 2000000)
-    maxY = int(env[3] + 0.001 + 1000000)
+    minX = int(env[0] + 0.001 )
+    minY = int(env[2] + 0.001 )
+    maxX = int(env[1] + 0.001 )
+    maxY = int(env[3] + 0.001 )
 
-    middleX = (int(env[0] + 0.001)+int(env[1] + 0.001 ))/2
-    middleY = (int(env[2] + 0.001)+int(env[3] + 0.001 ))/2
+    middleX = (int(minX + 0.001)+int(maxX + 0.001 ))/2
+    middleY = (int(minY + 0.001)+int(maxY + 0.001 ))/2
     
-    infileNameFile_jpeg = str(minX)[1:4] + str(minY)[1:4] + "_"+aufloesung+".tif"   
-    outfileName_jpeg = str(minX)[0:4] + str(minY)[0:4] + "_"+aufloesung+".tif" 
+    infileNameFile_jpeg = str(minX)[0:3] + str(minY)[0:3] + "_"+aufloesung+".tif"   
+    outfileName_jpeg = "2" + str(minX)[0:3] + "1" + str(minY)[0:3] + "_"+aufloesung+".tif" 
     
     #Create URL for RestService 
     #Lower left Corner
     url_ll = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting="
-    url_ll += str(middleX - height_extract) + "&northing=" + str(middleY - height_extract) 
+    url_ll += str(minX) + "&northing=" + str(minY) 
     url_ll += "&format=json"
-    response_ll = urllib2.urlopen(url_ll)
-    data_ll = json.load(response_ll)
+    response_ll = requests.get(url_ll)
+    data_ll = response_ll.json()
+    #response_ll = urllib2.urlopen(url_ll)
+    #data_ll = json.load(response_ll)
     xmin_st = data_ll.values()[0]
     ymin_st = data_ll.values()[1]
-    
+
     #Upper right Corner
     url_ur = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting=" 
-    url_ur += str(middleX + height_extract) + "&northing=" + str(middleY + height_extract)
+    url_ur += str(maxX) + "&northing=" + str(maxY)
     url_ur +="&format=json"
-    response_ur = urllib2.urlopen(url_ur)
-    data_ur = json.load(response_ur)
+    response_ur = requests.get(url_ur)
+    data_ur = response_ur.json()
+    #response_ur = urllib2.urlopen(url_ur)
+    #data_ur = json.load(response_ur)
     xmax_st = data_ur.values()[0]
     ymax_st = data_ur.values()[1]
 
@@ -270,21 +303,53 @@ for feature in layer:
     cmd += str(round(float(xmin_st),2)) + " " + str(round(float(ymin_st),2)) + " " 
     cmd += str(round(float(xmax_st),2)) + " " + str(round(float(ymax_st),2)) 
     cmd += " -co TILED=YES -r " + method + " " 
-    #cmd += os.path.join(path_lv95, "ohne_overviews", outfileName_jpeg) + " "
     cmd += vrt_95 + " "     
     cmd += os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
     os.system(cmd)
 
-    #print (cmd + " erledigt") 
     #Ausschnitt generieren LV03
     cmd = " gdalwarp -co PHOTOMETRIC=MINISBLACK -co TILED=YES -co PROFILE=GeoTIFF -tr " + gsd + " " + gsd
-    cmd += " -te " + str(middleX-height_extract) + " " + str(middleY-height_extract) + " " 
-    cmd += str(middleX+height_extract) + " " + str(middleY+height_extract) + " "
+    cmd += " -te " + str(minX) + " " + str(minY) + " " 
+    cmd += str(maxX) + " " + str(maxY) + " "
     cmd +=os.path.join(path_lv03,"working", infileNameFile_jpeg) + " " 
     cmd +=os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg)
     os.system(cmd)
-    #print ("********"+cmd)
-    #print("lv03")
+
+
+    #if ausschnitt differe in size
+    cmd = "identify -format \"%[fx:w]\" "
+    cmd += os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
+    cmd = cmd.split(" ")
+    width_lv95=subprocess.check_output(cmd)
+    width_lv95=width_lv95.replace('\n','')
+    width_lv95=width_lv95.replace('\"','')
+    
+    cmd = "identify -format \"%[fx:h]\" "
+    cmd += os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
+    cmd = cmd.split(" ")
+    height_lv95=subprocess.check_output(cmd)
+    height_lv95=height_lv95.replace('\n','')
+    height_lv95=height_lv95.replace('\"','')
+    
+    cmd = "identify -format \"%[fx:w]\" "
+    cmd += os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg)
+    cmd = cmd.split(" ")
+    width_lv03=subprocess.check_output(cmd)
+    width_lv03=width_lv03.replace('\n','')
+    width_lv03=width_lv03.replace('\"','')
+    
+    cmd = "identify -format \"%[fx:h]\" "
+    cmd += os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg)
+    cmd = cmd.split(" ")
+    height_lv03=subprocess.check_output(cmd)
+    height_lv03=height_lv03.replace('\n','')
+    height_lv03=height_lv03.replace('\"','')
+    
+    if int(width_lv95)!=int(width_lv03) or int(height_lv95)!=int(height_lv03) :
+		different_image_size = True
+    else :
+		different_image_size = False
+
 
     if int(year)<=2012 :
 
@@ -343,51 +408,78 @@ for feature in layer:
         #print("overviews generieren lv03") 
 
 
-    #Compare
-    cmd = "compare " 
-    cmd += os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg) + " " 
-    cmd += os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)+ " " 
-    cmd += "-compose src " +os.path.join(path_lv95,"difference",outfileName_jpeg)
-    os.system(cmd)
-    #print ("compare 1")
+    if different_image_size is False:
+        #Compare without tolerance
+        cmd = "compare " 
+        cmd += os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg) + " " 
+        cmd += os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)+ " " 
+        cmd += "-compose src " +os.path.join(path_lv95,"difference",outfileName_jpeg)
+        os.system(cmd)
+        #print ("compare 1")
 
 
-    #Compare
-    cmd = "compare -fuzz 10% " 
-    cmd +=os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg) + " " 
-    cmd += os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)+ " " 
-    cmd += "-compose src " +os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)
-    #print ("*****"+cmd)
-    os.system(cmd)
-    #print ("compare 2")
+        #Compare with a tolerance of 10%
+        cmd = "compare -fuzz 10% " 
+        cmd +=os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg) + " " 
+        cmd += os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)+ " " 
+        cmd += "-compose src " +os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)
+        os.system(cmd)
+        #print ("compare 2")
 
+        #Calculate false pixels on base of the comparison without tolerance
+        cmd = "convert "+os.path.join(path_lv95,"difference",outfileName_jpeg)
+        cmd += " -fill black +opaque srgba(241,0,30,0.8) -fill white -opaque srgba(241,0,30,0.8)"
+        cmd += " -format \"%[fx:mean*100]\" info:"
+        cmd = cmd.split(" ")
+        false_pixel_percent=subprocess.check_output(cmd)
+        false_pixel_percent=false_pixel_percent.replace('\n','')
+        false_pixel_percent_orig=false_pixel_percent.replace('\"','')
     
-    # Get percentag of false values
-    cmd = "convert "+os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)
-    cmd += " -fill black +opaque  \"srgba(241,0,30,0.8)\" -fill white -opaque "
-    cmd += "\"srgba(241,0,30,0.8)\""
-    cmd += " -format \"false pixel values = %[fx:mean*100] %\"  info:"
-    #os.system(cmd)
+        #Error-Message if percentage of comparison without tolerance is 0%
+        if float(false_pixel_percent_orig) == 0 :
+            logger_error.error(os.path.join(path_lv95,"difference",outfileName_jpeg)+" weist einen Anteil von 0% falscher Pixelwerte im 0-Toleranz-Bild auf." )
+            cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
+            cmd += " " + os.path.join(path_lv95,"difference")
+            os.system(cmd)
+    
 
-    cmd = "convert "+os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)
-    cmd += " -fill black +opaque srgba(241,0,30,0.8) -fill white -opaque srgba(241,0,30,0.8)"
-    cmd += " -format \"%[fx:mean*100]\" info:"
-    cmd = cmd.split(" ")
-    false_pixel_percent=subprocess.check_output(cmd)
-    false_pixel_percent=false_pixel_percent.replace('\n','')
-    false_pixel_percent=false_pixel_percent.replace('\"','')
-    #print repr(false_pixel_percent)
-    logger_notice.info("Anteil falscher Pixelwerte: " +false_pixel_percent )
+        #Calculate false pixels on base of the comparison with a tolerance of 10%
+        cmd = "convert "+os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)
+        cmd += " -fill black +opaque srgba(241,0,30,0.8) -fill white -opaque srgba(241,0,30,0.8)"
+        cmd += " -format \"%[fx:mean*100]\" info:"
+        cmd = cmd.split(" ")
+        false_pixel_percent=subprocess.check_output(cmd)
+        false_pixel_percent=false_pixel_percent.replace('\n','')
+        false_pixel_percent=false_pixel_percent.replace('\"','')
+        logger_notice.info("Anteil falscher Pixelwerte: " +false_pixel_percent )
 
-    if float(false_pixel_percent)>=1:
-      logger_error.error(os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)+" weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: "+false_pixel_percent)
+        #Error-Message if percentage of comparison with tolerance is higher than 1%
+        if float(false_pixel_percent)>=1 :
+            logger_error.error(os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)+" weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: "+false_pixel_percent)
+            cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
+            cmd += " " + os.path.join(path_lv95,"difference")
+            os.system(cmd)
+    
+        #remove comparison-images if percentage of comparison without tolerance is higher than 0 %
+        # and percentage of comparison with tolerance is lower than 1%
+        if float(false_pixel_percent_orig) > 0 and float(false_pixel_percent)<1 :
+            cmd = "rm " + os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg)
+            os.system(cmd)
+            cmd = "rm " + os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)
+            os.system(cmd)
+            cmd = "rm " + os.path.join(path_lv95,"difference",outfileName_jpeg)
+            os.system(cmd)
+            cmd = "rm " + os.path.join(path_lv95,"difference","fuzz_10_"+outfileName_jpeg)
+            os.system(cmd)
+    else :
+        cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
+        cmd += " " + os.path.join(path_lv95,"difference")
+        os.system(cmd)
+        logger_error.error(os.path.join(path_lv95,outfileName_jpeg)+" kann nicht verglichen werden, da unterschiedliche Bildgroessen")
+        
 
-    cmd = "rm " + os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg)
-    os.system(cmd)
-    cmd = "rm " + os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)
-    os.system(cmd)
 cmd = "rm -r " + os.path.join(path_lv95, "ohne_overviews")
-#os.system(cmd)
+os.system(cmd)
 cmd = "rm -r " + os.path.join(path_lv03, "working")
 #os.system(cmd)
 #cmd = "rm " + path_lv03 + "/" + orthofilename + ".shp " 

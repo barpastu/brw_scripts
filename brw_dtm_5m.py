@@ -5,33 +5,34 @@
 from osgeo import gdal
 from osgeo import ogr, osr
 import os
-import urllib2
+#import urllib2
 import json
 import subprocess
 import logging
+import requests
 
 
 year = "2014"
 year_short = "14"
 theme = "ndom"
 gsd = "5.00"
-aufloesung="500_cm"
+aufloesung="500cm"
 colorisation = "gray"
-gsd_original ="50_cm"
+gsd_original ="50cm"
 if colorisation is "rgb":
     photometric_color="YCBCR"
 if colorisation is "gray":
     photometric_color="MINISBLACK"
 
-#Settings for RestService
-proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
-auth = urllib2.HTTPBasicAuthHandler()
-opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
-urllib2.install_opener(opener)
+##Settings for RestService
+#proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
+#auth = urllib2.HTTPBasicAuthHandler()
+#opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
+#urllib2.install_opener(opener)
 
 #Logger for warnings and errors
 logger_error = logging.getLogger('brw_error')
-handler_error = logging.FileHandler('log_brw_error.log')
+handler_error = logging.FileHandler('log_brw_error_lidar.log')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 handler_error.setFormatter(formatter)
 logger_error.addHandler(handler_error) 
@@ -39,7 +40,7 @@ logger_error.setLevel(logging.WARNING)
 
 #Logger for notices
 logger_notice = logging.getLogger('brw')
-handler_notice = logging.FileHandler('log_brw.log')
+handler_notice = logging.FileHandler('log_brw_lidar.log')
 handler_notice.setFormatter(formatter)
 logger_notice.addHandler(handler_notice) 
 logger_notice.setLevel(logging.INFO)
@@ -57,16 +58,16 @@ logger_notice.info("Start Lidar " + theme + " " + year + " " + gsd)
 method = 'lanczos'
 
 #path to the data on the old storage
-path_old_location= "lv03/lidar/" + year + "/" + theme
+path_old_location= "/home/barpastu/Geodaten/LV03/lidar/" + year + "/" + theme
 
 #path to the data on the new storage
-path_new_location= "lv95/lidar/" + year + "/" + theme
+path_new_location= "/home/barpastu/Geodaten/LV95/lidar/" + year + "/" + theme
 
 #path to the data of gsd 50 cm on the new storage
 path_lv95_50 = path_new_location + "/" + colorisation + "/" + gsd_original
 
 #path to the data on the new storage (LV03)
-path_lv03 =  path_new_location + "/"+ colorisation + "/" + aufloesung 
+path_lv03 =  path_old_location  #+ "/"+ colorisation + "/" + aufloesung 
 
 #path to the data on the new storage (LV95)
 path_lv95 = path_new_location + "/"+ colorisation + "/" + aufloesung 
@@ -197,19 +198,23 @@ for feature in layer:
         #Create URL for RestService 
         #Lower left Corner
         url_ll = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting="
-        url_ll += str(middleX - height_extract) + "&northing=" + str(middleY - height_extract) 
+        url_ll += str(minX) + "&northing=" + str(minY) 
         url_ll += "&format=json"
-        response_ll = urllib2.urlopen(url_ll)
-        data_ll = json.load(response_ll)
+        response_ll = requests.get(url_ll)
+        data_ll = response_ll.json()
+        #response_ll = urllib2.urlopen(url_ll)
+        #data_ll = json.load(response_ll)
         xmin_st = data_ll.values()[0]
         ymin_st = data_ll.values()[1]
     
         #Upper right Corner
         url_ur = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting=" 
-        url_ur += str(middleX + height_extract) + "&northing=" + str(middleY + height_extract)
+        url_ur += str(maxX) + "&northing=" + str(maxY)
         url_ur +="&format=json"
-        response_ur = urllib2.urlopen(url_ur)
-        data_ur = json.load(response_ur)
+        response_ur = requests.get(url_ur)
+        data_ur = response_ur.json()
+        #response_ur = urllib2.urlopen(url_ur)
+        #data_ur = json.load(response_ur)
         xmax_st = data_ur.values()[0]
         ymax_st = data_ur.values()[1]
 
@@ -226,8 +231,8 @@ for feature in layer:
         print (cmd + " erledigt") 
         #Ausschnitt generieren LV03
         cmd = " gdalwarp -co PHOTOMETRIC=" + photometric_color + " -co TILED=YES -co PROFILE=GeoTIFF -tr " + gsd + " " + gsd
-        cmd += " -te " + str(middleX-height_extract) + " " + str(middleY-height_extract) + " " 
-        cmd += str(middleX+height_extract) + " " + str(middleY+height_extract) + " "
+        cmd += " -te " + str(minX) + " " + str(minY) + " " 
+        cmd += str(maxX) + " " + str(maxY) + " "
         cmd +=os.path.join(path_lv03, infileNameFile_jpeg) + " " 
         cmd +=os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg)
         os.system(cmd)
@@ -291,40 +296,40 @@ for feature in layer:
         #print("overviews generieren lv03") 
 
 
-        #Calculate Difference
-        cmd = "gdal_calc.py -A " 
-        cmd += os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg) + " -B " 
-        cmd += os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)+ " " 
-        cmd += "--outfile=" +os.path.join(path_lv95,"difference","orig_"+outfileName_jpeg)
-        cmd += " --calc=\"A-B\""
-        os.system(cmd)
+        ##Calculate Difference
+        #cmd = "gdal_calc.py -A " 
+        #cmd += os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg) + " -B " 
+        #cmd += os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)+ " " 
+        #cmd += "--outfile=" +os.path.join(path_lv95,"difference","orig_"+outfileName_jpeg)
+        #cmd += " --calc=\"A-B\""
+        #os.system(cmd)
 
-        cmd = "gdal_calc.py -A "+os.path.join(path_lv95,"difference","orig_"+outfileName_jpeg) + " "
-        cmd += "--outfile=" + os.path.join(path_lv95,"difference",outfileName_jpeg) + " "
-        cmd += "--calc=\"(absolute(A)<=0.1)*0 + (absolute(A)>0.1)*1\" --NoDataValue=10"
-        os.system(cmd)
+        #cmd = "gdal_calc.py -A "+os.path.join(path_lv95,"difference","orig_"+outfileName_jpeg) + " "
+        #cmd += "--outfile=" + os.path.join(path_lv95,"difference",outfileName_jpeg) + " "
+        #cmd += "--calc=\"(absolute(A)<=0.1)*0 + (absolute(A)>0.1)*1\" --NoDataValue=10"
+        #os.system(cmd)
 
-        cmd = "convert "+os.path.join(path_lv95,"difference",outfileName_jpeg)
-        cmd += " -format \"%[fx:mean*100]\" info:"
-        cmd = cmd.split(" ")
-        false_pixel_percent=subprocess.check_output(cmd)
-        false_pixel_percent=false_pixel_percent.replace('\n','')
-        false_pixel_percent=false_pixel_percent.replace('\"','')
-        #print repr(false_pixel_percent)
-        logger_notice.info("Anteil falscher Pixelwerte: " +false_pixel_percent )
+        #cmd = "convert "+os.path.join(path_lv95,"difference",outfileName_jpeg)
+        #cmd += " -format \"%[fx:mean*100]\" info:"
+        #cmd = cmd.split(" ")
+        #false_pixel_percent=subprocess.check_output(cmd)
+        #false_pixel_percent=false_pixel_percent.replace('\n','')
+        #false_pixel_percent=false_pixel_percent.replace('\"','')
+        ##print repr(false_pixel_percent)
+        #logger_notice.info("Anteil falscher Pixelwerte: " +false_pixel_percent )
 
 
-        if float(false_pixel_percent)>=1:
-            logger_error.error(os.path.join(path_lv95,"difference",outfileName_jpeg)+" weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: "+false_pixel_percent)
-        else :
-            cmd = "rm " + os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg)
-            os.system(cmd)
-            cmd = "rm " + os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)
-            os.system(cmd)
-            cmd = "rm " + os.path.join(path_lv95,"difference","orig_"+outfileName_jpeg)
-            os.system(cmd)
-            cmd = "rm " + os.path.join(path_lv95,"difference",outfileName_jpeg)
-            os.system(cmd)
+        #if float(false_pixel_percent)>=1:
+        #    logger_error.error(os.path.join(path_lv95,"difference",outfileName_jpeg)+" weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: "+false_pixel_percent)
+        #else :
+        #    cmd = "rm " + os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg)
+        #    os.system(cmd)
+        #    cmd = "rm " + os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)
+        #    os.system(cmd)
+        #    cmd = "rm " + os.path.join(path_lv95,"difference","orig_"+outfileName_jpeg)
+        #    os.system(cmd)
+        #    cmd = "rm " + os.path.join(path_lv95,"difference",outfileName_jpeg)
+        #    os.system(cmd)
 cmd = "rm -r " + os.path.join(path_lv95, "ohne_overviews")
 os.system(cmd)
 cmd = "rm -r " + os.path.join(path_lv03, "working")

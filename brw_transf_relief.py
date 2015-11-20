@@ -5,10 +5,11 @@
 from osgeo import gdal
 from osgeo import ogr, osr
 import os
-import urllib2
+#import urllib2
 import json
 import subprocess
 import logging
+import requests
 
 
 
@@ -16,11 +17,11 @@ gsd = "30"
 aufloesung="30_m"
 colorisation = "gray"
 
-#Settings for RestService
-proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
-auth = urllib2.HTTPBasicAuthHandler()
-opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
-urllib2.install_opener(opener)
+##Settings for RestService
+#proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
+#auth = urllib2.HTTPBasicAuthHandler()
+#opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
+#urllib2.install_opener(opener)
 
 #Logger for warnings and errors
 logger_error = logging.getLogger('brw_error')
@@ -45,9 +46,9 @@ logger_notice.info("Start relief")
 
 
 #Settings for resampling-methode and vrt-path
-method = 'near'
-path_old_location = "images/LV03"
-path_new_location="images/LV95"
+method = 'bilinear'  #near
+path_old_location = "/home/barpastu/Geodaten/LV03/images/"
+path_new_location="/home/barpastu/Geodaten/LV95/images/relief"
 path_lv03 = path_old_location 
 path_lv95 = path_new_location + "/" + aufloesung 
 orthofilename = "relief"
@@ -170,7 +171,7 @@ for feature in layer:
 
 
     # Transformieren 
-    cmd = "gdalwarp -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
+    cmd = "gdalwarp -dstnodata \"255,255,255\" -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
     cmd += str(minY) + " " +  str(maxX) + " " +  str(maxY) + " -tr " + gsd + " " + gsd + " "
     cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=MINISBLACK -co TILED=YES "
     cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
@@ -223,33 +224,37 @@ for feature in layer:
     geom = feature.GetGeometryRef()
     env = geom.GetEnvelope()
 
-    minX = int(env[0] + 0.001 + 2000000)
-    minY = int(env[2] + 0.001 + 1000000)
-    maxX = int(env[1] + 0.001 + 2000000)
-    maxY = int(env[3] + 0.001 + 1000000)
+    minX = int(env[0] + 0.001 )
+    minY = int(env[2] + 0.001 )
+    maxX = int(env[1] + 0.001 )
+    maxY = int(env[3] + 0.001 )
 
-    middleX = (int(env[0] + 0.001)+int(env[1] + 0.001 ))/2
-    middleY = (int(env[2] + 0.001)+int(env[3] + 0.001 ))/2
+    middleX = (int(minX + 0.001)+int(maxX + 0.001 ))/2
+    middleY = (int(minY + 0.001)+int(maxY + 0.001 ))/2
     
-    infileNameFile_jpeg = str(minX)[1:4] + str(minY)[1:4] + "_"+aufloesung+".tif"   
-    outfileName_jpeg = str(minX)[0:4] + str(minY)[0:4] + "_"+aufloesung+".tif" 
+    infileNameFile_jpeg = str(minX)[0:3] + str(minY)[0:3] + "_"+aufloesung+".tif"   
+    outfileName_jpeg = "2" + str(minX)[0:3] + "1" + str(minY)[0:3] + "_"+aufloesung+".tif" 
     
     #Create URL for RestService 
     #Lower left Corner
     url_ll = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting="
-    url_ll += str(middleX - height_extract) + "&northing=" + str(middleY - height_extract) 
+    url_ll += str(minX) + "&northing=" + str(minY) 
     url_ll += "&format=json"
-    response_ll = urllib2.urlopen(url_ll)
-    data_ll = json.load(response_ll)
+    response_ll = requests.get(url_ll)
+    data_ll = response_ll.json()
+    #response_ll = urllib2.urlopen(url_ll)
+    #data_ll = json.load(response_ll)
     xmin_st = data_ll.values()[0]
     ymin_st = data_ll.values()[1]
-    
+
     #Upper right Corner
     url_ur = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting=" 
-    url_ur += str(middleX + height_extract) + "&northing=" + str(middleY + height_extract)
+    url_ur += str(maxX) + "&northing=" + str(maxY)
     url_ur +="&format=json"
-    response_ur = urllib2.urlopen(url_ur)
-    data_ur = json.load(response_ur)
+    response_ur = requests.get(url_ur)
+    data_ur = response_ur.json()
+    #response_ur = urllib2.urlopen(url_ur)
+    #data_ur = json.load(response_ur)
     xmax_st = data_ur.values()[0]
     ymax_st = data_ur.values()[1]
 
@@ -266,13 +271,11 @@ for feature in layer:
     #print (cmd + " erledigt") 
     #Ausschnitt generieren LV03
     cmd = " gdalwarp -co PHOTOMETRIC=MINISBLACK -co TILED=YES -co PROFILE=GeoTIFF -tr " + gsd + " " + gsd
-    cmd += " -te " + str(middleX-height_extract) + " " + str(middleY-height_extract) + " " 
-    cmd += str(middleX+height_extract) + " " + str(middleY+height_extract) + " "
+    cmd += " -te " + str(minX) + " " + str(minY) + " " 
+    cmd += str(maxX) + " " + str(maxY) + " "
     cmd +=os.path.join(path_lv03,"working", infileNameFile_jpeg) + " " 
     cmd +=os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg)
     os.system(cmd)
-    #print ("********"+cmd)
-    #print("lv03")
 
 
 #    cmd = "cp " + os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg) + " "

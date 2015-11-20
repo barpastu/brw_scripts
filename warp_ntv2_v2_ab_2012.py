@@ -5,11 +5,11 @@
 from osgeo import gdal
 from osgeo import ogr, osr
 import os
-#import requests
+import requests
 import json
 import subprocess
 import logging
-import urllib2
+#import urllib2
 
 
 year = "2011"
@@ -19,16 +19,16 @@ aufloesung="12_5cm"
 colorisation = "rgb"
 
 
-#Settings for RestService
-proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
-auth = urllib2.HTTPBasicAuthHandler()
-opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
-urllib2.install_opener(opener)
+##Settings for RestService
+#proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
+#auth = urllib2.HTTPBasicAuthHandler()
+#opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
+#urllib2.install_opener(opener)
 
 
 #Logger for warnings and errors
 logger_error = logging.getLogger('brw_error')
-handler_error = logging.FileHandler('log_brw_error.log')
+handler_error = logging.FileHandler('log_brw_error_2011_cir.log')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 handler_error.setFormatter(formatter)
 logger_error.addHandler(handler_error) 
@@ -36,7 +36,7 @@ logger_error.setLevel(logging.WARNING)
 
 #Logger for notices
 logger_notice = logging.getLogger('brw')
-handler_notice = logging.FileHandler('log_brw.log')
+handler_notice = logging.FileHandler('log_brw_2011_cir.log')
 handler_notice.setFormatter(formatter)
 logger_notice.addHandler(handler_notice) 
 logger_notice.setLevel(logging.INFO)
@@ -54,10 +54,10 @@ logger_notice.info("Start " + year)
 method = 'lanczos'
 
 #path to LV03-Data
-path_old_location = "lv03/ortho" + year_short + "/" + aufloesung + "/" + colorisation
+path_old_location = "/home/barpastu/Geodaten/LV03/ortho" + year_short + "/" + aufloesung + "/" + colorisation
 
 #path to LV95-Data (without colorisation and resolution)
-path_new_location="lv95/orthofoto/" + year
+path_new_location="/home/barpastu/Geodaten/LV95/orthofoto/" + year
 
 #path to LV03-Data
 path_lv03 = path_old_location 
@@ -188,7 +188,7 @@ for feature in layer:
 
 
     # transformation lv03 to lv95
-    cmd = "gdalwarp -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
+    cmd = "gdalwarp -dstnodata \"255,255,255\" -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
     cmd += str(minY) + " " +  str(maxX) + " " +  str(maxY) + " -tr " + gsd + " " + gsd + " "
     cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=RGB -co TILED=YES "
     cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
@@ -244,10 +244,10 @@ for feature in layer:
     url_ll = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting="
     url_ll += str(minX) + "&northing=" + str(minY) 
     url_ll += "&format=json"
-    #response_ll = requests.get(url_ll)
-    #data_ll = response_ll.json()
-    response_ll = urllib2.urlopen(url_ll)
-    data_ll = json.load(response_ll)
+    response_ll = requests.get(url_ll)
+    data_ll = response_ll.json()
+    #response_ll = urllib2.urlopen(url_ll)
+    #data_ll = json.load(response_ll)
     xmin_st = data_ll.values()[0]
     ymin_st = data_ll.values()[1]
 
@@ -255,10 +255,10 @@ for feature in layer:
     url_ur = "http://geodesy.geo.admin.ch/reframe/lv03tolv95?easting=" 
     url_ur += str(maxX) + "&northing=" + str(maxY)
     url_ur +="&format=json"
-    #response_ur = requests.get(url_ur)
-    #data_ur = response_ur.json()
-    response_ur = urllib2.urlopen(url_ur)
-    data_ur = json.load(response_ur)
+    response_ur = requests.get(url_ur)
+    data_ur = response_ur.json()
+    #response_ur = urllib2.urlopen(url_ur)
+    #data_ur = json.load(response_ur)
     xmax_st = data_ur.values()[0]
     ymax_st = data_ur.values()[1]
 

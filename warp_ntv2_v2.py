@@ -11,8 +11,8 @@ import subprocess
 import logging
 
 
-year = "2013"
-year_short = "13"
+year = "2012"
+year_short = "12"
 gsd = "0.125"
 aufloesung="12_5cm"
 colorisation = "rgb"

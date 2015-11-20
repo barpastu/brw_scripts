@@ -1,0 +1,6 @@
+2015-11-20 08:35:17,473 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/dtm_relief/gray/50cm/difference/26181252_50cm.tif kann nicht verglichen werden
+2015-11-20 08:35:46,443 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/dtm_relief/gray/50cm/difference/26191242_50cm.tif kann nicht verglichen werden
+2015-11-20 08:36:57,076 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/dtm_relief/gray/50cm/difference/26221239_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 1.00071
+2015-11-20 08:36:57,076 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/dtm_relief/gray/50cm/difference/26221239_50cm.tif höchster Wert: 254.0 ; niedrigster Wert: 0.0
+2015-11-20 08:38:31,192 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/dtm_relief/gray/50cm/difference/26271242_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 1.00104
+2015-11-20 08:38:31,192 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/dtm_relief/gray/50cm/difference/26271242_50cm.tif höchster Wert: 254.0 ; niedrigster Wert: 0.0

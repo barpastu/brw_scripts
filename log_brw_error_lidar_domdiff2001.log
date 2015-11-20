@@ -1,0 +1,96 @@
+2015-11-19 14:09:05,867 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/25951217_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 12.7717
+2015-11-19 14:09:05,867 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/25951217_50cm.tif höchster Wert: 32.6900024414 ; niedrigster Wert: -42.4799804688
+2015-11-19 14:09:45,316 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/25961218_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 1.49145
+2015-11-19 14:09:45,316 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/25961218_50cm.tif höchster Wert: 9.25 ; niedrigster Wert: -7.47998046875
+2015-11-19 14:10:15,184 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/25971215_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 5.6867
+2015-11-19 14:10:15,184 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/25971215_50cm.tif höchster Wert: 25.799987793 ; niedrigster Wert: -32.0500183105
+2015-11-19 14:11:00,733 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/25981217_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 13.3612
+2015-11-19 14:11:00,733 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/25981217_50cm.tif höchster Wert: 73.719909668 ; niedrigster Wert: -73.4800415039
+2015-11-19 14:12:03,776 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/25991217_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 34.9624
+2015-11-19 14:12:03,776 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/25991217_50cm.tif höchster Wert: 79.4999389648 ; niedrigster Wert: -78.2199707031
+2015-11-19 14:13:08,255 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26001214_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 2.3227
+2015-11-19 14:13:08,255 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26001214_50cm.tif höchster Wert: 33.0399780273 ; niedrigster Wert: -45.6299438477
+2015-11-19 14:13:10,389 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26001215_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 17.3515
+2015-11-19 14:13:10,389 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26001215_50cm.tif höchster Wert: 31.0299682617 ; niedrigster Wert: -43.75
+2015-11-19 14:13:14,151 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26001217_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 38.889
+2015-11-19 14:13:14,151 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26001217_50cm.tif höchster Wert: 88.1700439453 ; niedrigster Wert: -85.1900024414
+2015-11-19 14:14:29,555 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26011214_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 74.0879
+2015-11-19 14:14:29,555 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26011214_50cm.tif höchster Wert: 74.0699462891 ; niedrigster Wert: -76.5200805664
+2015-11-19 14:15:46,189 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26021214_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 8.98857
+2015-11-19 14:15:46,189 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26021214_50cm.tif höchster Wert: 72.4099731445 ; niedrigster Wert: -78.4700317383
+2015-11-19 14:31:01,238 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26161222_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 9.11231
+2015-11-19 14:31:01,254 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26161222_50cm.tif höchster Wert: 10515.8603516 ; niedrigster Wert: -10510.0302734
+2015-11-19 14:31:59,824 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26171222_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 16.0185
+2015-11-19 14:31:59,824 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26171222_50cm.tif höchster Wert: 58.2299804688 ; niedrigster Wert: -63.3800048828
+2015-11-19 14:32:09,708 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26171227_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 26.8365
+2015-11-19 14:32:09,708 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26171227_50cm.tif höchster Wert: 37.7900085449 ; niedrigster Wert: -39.5100097656
+2015-11-19 14:32:56,672 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26181222_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 5.32413
+2015-11-19 14:32:56,672 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26181222_50cm.tif höchster Wert: 38.0 ; niedrigster Wert: -38.5200195312
+2015-11-19 14:33:02,130 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26181225_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 31.084
+2015-11-19 14:33:02,130 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26181225_50cm.tif höchster Wert: 39.1200256348 ; niedrigster Wert: -39.0400085449
+2015-11-19 14:33:03,941 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26181226_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 30.8891
+2015-11-19 14:33:03,941 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26181226_50cm.tif höchster Wert: 39.0500183105 ; niedrigster Wert: -39.2799987793
+2015-11-19 14:33:56,115 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26191223_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 4.2258
+2015-11-19 14:33:56,115 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26191223_50cm.tif höchster Wert: 44.9399414062 ; niedrigster Wert: -70.9899902344
+2015-11-19 14:35:39,920 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26211239_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 81.0378
+2015-11-19 14:35:39,920 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26211239_50cm.tif höchster Wert: 33.8000488281 ; niedrigster Wert: -32.9199829102
+2015-11-19 14:35:55,198 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26221233_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 23.3948
+2015-11-19 14:35:55,198 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26221233_50cm.tif höchster Wert: 38.0100097656 ; niedrigster Wert: -42.1100158691
+2015-11-19 14:36:25,184 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26231233_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 25.0661
+2015-11-19 14:36:25,184 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26231233_50cm.tif höchster Wert: 39.9599609375 ; niedrigster Wert: -43.4699707031
+2015-11-19 14:37:12,672 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26251233_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 9.1355
+2015-11-19 14:37:12,672 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26251233_50cm.tif höchster Wert: 29.990020752 ; niedrigster Wert: -30.1699829102
+2015-11-19 14:37:37,218 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26251243_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 68.3748
+2015-11-19 14:37:37,218 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26251243_50cm.tif höchster Wert: 37.2299804688 ; niedrigster Wert: -36.1300048828
+2015-11-19 14:37:39,301 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26261233_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 41.1823
+2015-11-19 14:37:39,301 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26261233_50cm.tif höchster Wert: 10407.9296875 ; niedrigster Wert: -10421.6103516
+2015-11-19 14:37:44,266 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26261235_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 31.5477
+2015-11-19 14:37:44,266 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26261235_50cm.tif höchster Wert: 31.8399963379 ; niedrigster Wert: -32.1799926758
+2015-11-19 14:38:04,041 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26261243_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 53.8834
+2015-11-19 14:38:04,042 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26261243_50cm.tif höchster Wert: 34.549987793 ; niedrigster Wert: -35.1300048828
+2015-11-19 14:38:13,095 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26271235_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 27.5943
+2015-11-19 14:38:13,095 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26271235_50cm.tif höchster Wert: 30.0100097656 ; niedrigster Wert: -29.700012207
+2015-11-19 14:38:16,285 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26271236_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 26.0978
+2015-11-19 14:38:16,285 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26271236_50cm.tif höchster Wert: 35.5599975586 ; niedrigster Wert: -36.7399902344
+2015-11-19 14:38:28,990 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26271242_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 89.305
+2015-11-19 14:38:28,990 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26271242_50cm.tif höchster Wert: 34.8599853516 ; niedrigster Wert: -35.0399780273
+2015-11-19 14:38:31,425 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26271243_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 40.618
+2015-11-19 14:38:31,425 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26271243_50cm.tif höchster Wert: 35.3300170898 ; niedrigster Wert: -35.4599609375
+2015-11-19 14:38:40,800 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26281234_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 43.908
+2015-11-19 14:38:40,801 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26281234_50cm.tif höchster Wert: 39.1900024414 ; niedrigster Wert: -40.8200073242
+2015-11-19 14:38:42,842 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26281235_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 16.1187
+2015-11-19 14:38:42,842 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26281235_50cm.tif höchster Wert: 32.5700073242 ; niedrigster Wert: -32.7799987793
+2015-11-19 14:38:48,353 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26281237_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 23.0692
+2015-11-19 14:38:48,353 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26281237_50cm.tif höchster Wert: 39.2700195312 ; niedrigster Wert: -40.7699890137
+2015-11-19 14:38:50,344 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26281238_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 2.13277
+2015-11-19 14:38:50,344 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26281238_50cm.tif höchster Wert: 51.5 ; niedrigster Wert: -53.5299987793
+2015-11-19 14:38:59,315 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26281242_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 77.9951
+2015-11-19 14:38:59,315 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26281242_50cm.tif höchster Wert: 37.7800292969 ; niedrigster Wert: -34.3800048828
+2015-11-19 14:39:01,441 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26281243_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 15.713
+2015-11-19 14:39:01,441 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26281243_50cm.tif höchster Wert: 36.5099487305 ; niedrigster Wert: -36.2899780273
+2015-11-19 14:39:10,702 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26291234_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 20.4544
+2015-11-19 14:39:10,702 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26291234_50cm.tif höchster Wert: 35.8999938965 ; niedrigster Wert: -35.1000061035
+2015-11-19 14:39:21,732 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26291238_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 5.87283
+2015-11-19 14:39:21,732 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26291238_50cm.tif höchster Wert: 29.1600036621 ; niedrigster Wert: -25.5899963379
+2015-11-19 14:39:31,304 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26291242_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 32.2127
+2015-11-19 14:39:31,304 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26291242_50cm.tif höchster Wert: 35.0899963379 ; niedrigster Wert: -37.1300048828
+2015-11-19 14:39:57,635 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26301239_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 26.6885
+2015-11-19 14:39:57,635 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26301239_50cm.tif höchster Wert: 10426.1601562 ; niedrigster Wert: -10424.3398438
+2015-11-19 14:40:02,230 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26301241_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 25.8105
+2015-11-19 14:40:02,230 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26301241_50cm.tif höchster Wert: 27.6799926758 ; niedrigster Wert: -24.4400024414
+2015-11-19 14:40:04,344 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26301242_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 1.97845
+2015-11-19 14:40:04,344 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26301242_50cm.tif höchster Wert: 14.4799804688 ; niedrigster Wert: -14.0799865723
+2015-11-19 14:40:25,968 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26311240_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 25.2114
+2015-11-19 14:40:25,969 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26311240_50cm.tif höchster Wert: 37.3500061035 ; niedrigster Wert: -33.9000244141
+2015-11-19 14:40:28,112 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26311241_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 5.37015
+2015-11-19 14:40:28,112 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26311241_50cm.tif höchster Wert: 30.6000061035 ; niedrigster Wert: -31.5899963379
+2015-11-19 14:41:48,826 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26331251_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 1.04115
+2015-11-19 14:41:48,826 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26331251_50cm.tif höchster Wert: 24.7700195312 ; niedrigster Wert: -18.6699829102
+2015-11-19 14:44:00,868 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26381255_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 3.05153
+2015-11-19 14:44:00,868 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26381255_50cm.tif höchster Wert: 30.1000366211 ; niedrigster Wert: -31.8999633789
+2015-11-19 14:44:38,338 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26391255_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 8.80803
+2015-11-19 14:44:38,338 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26391255_50cm.tif höchster Wert: 40.549987793 ; niedrigster Wert: -39.0899658203
+2015-11-19 14:45:16,462 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26401255_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 3.9442
+2015-11-19 14:45:16,462 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26401255_50cm.tif höchster Wert: 23.7299804688 ; niedrigster Wert: -23.8600463867
+2015-11-19 14:45:18,398 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26401256_50cm.tif weist einen Anteil von mehr als 1% falscher Pixelwerte auf. Folgender Anteil: 1.88775
+2015-11-19 14:45:18,398 ERROR /home/barpastu/Geodaten/LV95/lidar/2014/domdiff2001/gray/50cm/difference/26401256_50cm.tif höchster Wert: 44.4800415039 ; niedrigster Wert: -53.5

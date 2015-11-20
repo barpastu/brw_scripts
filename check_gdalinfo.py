@@ -12,11 +12,11 @@ import logging
 import requests
 
 year = "2014"
-theme = "dom"
+theme = "hangneigung"
 gsd = "0.50"
 aufloesung="50cm"
 colorisation = "gray"
-tolerance="0.1"  #0.1m
+tolerance="1.5"
 
 ##Settings for RestService
 #proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
@@ -86,95 +86,19 @@ orthofilename = theme+"_"+year
 
 #path of the vrt
 vrt = path_lv03 + "/" + orthofilename+".vrt"
-vrt_95 = path_lv95 + "/ohne_overviews/" +orthofilename+".vrt"
+vrt_95 = path_lv95 + "/" +orthofilename+".vrt"
 height_extract = 500
 vrt_exists = False
 
 
-#Create Folders
-if not os.path.exists(path_lv95):
-    os.makedirs(path_lv95)
-if not os.path.exists(path_lv95 + "/difference"):
-    os.makedirs(path_lv95 + "/difference")
-if not os.path.exists(path_lv95 + "/ohne_overviews"):
-    os.makedirs(path_lv95 + "/ohne_overviews")
+if theme is not "dom":
 
-
-
-
-#Copy files to new folder (working-data)
-if not os.path.exists(path_lv03 + "/working/"):
-    os.makedirs(path_lv03 + "/working/")
-    for i in os.listdir(path_lv03+ "/"):
-        if i.endswith(".tif"):
-            cmd = "cp " + path_lv03 + "/" + i + " " + path_lv03 + "/working/"
-            os.system(cmd)
-
-
-#Remove overviews
-for i in os.listdir(path_lv03 + "/working/"):
-    if i.endswith(".tif"):
-        cmd = "gdaladdo -clean " + path_lv03 + "/working/" +i
+    if vrt_exists is False:
+        print("vrt erstellen")
+        #Create vrt
+        cmd = "gdalbuildvrt " + path_lv95 + "/" + orthofilename + ".vrt " + path_lv95 + "/*.tif"
         os.system(cmd)
-        continue
-    else:
-        continue
-
-
-#Minimize tiff-files
-for infileNameFile_jpeg in os.listdir(os.path.join(path_lv03,"working")) :
-    #Splits up the tiff-file (to decrease the file size (without overviews))
-    cmd = "tiffsplit " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " tmp-"
-    os.system(cmd)
-    # Duplicate the geotransform and projection metadata from one raster dataset to another
-    cmd = "python gdalcopyproj.py " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " tmp-aaa.tif"
-    os.system(cmd)
-    cmd = "mv tmp-aaa.tif "+ os.path.join(path_lv03,"working", infileNameFile_jpeg)
-    os.system(cmd)
-
-
-
-#Definition of spatial reference systems
-S_SRS = "+proj=somerc +lat_0=46.952405555555555N +lon_0=7.439583333333333E +ellps=bessel +x_0=600000 +y_0=200000 +towgs84=674.374,15.056,405.346 +units=m +units=m +k_0=1 +nadgrids=./chenyx06a.gsb"
-T_SRS = "+proj=somerc +lat_0=46.952405555555555N +lon_0=7.439583333333333E +ellps=bessel +x_0=2600000 +y_0=1200000 +towgs84=674.374,15.056,405.346 +units=m +k_0=1 +nadgrids=@null"
-
-ogr.UseExceptions() 
-
-#Create Tileindex
-cmd = "gdaltindex -write_absolute_path " + path_lv03 + "/" + orthofilename + "old.shp " 
-cmd += path_lv03 + "/working/*.tif"
-os.system(cmd)
-
-#Shape-File with tile division
-shp = ogr.Open(path_lv03 + "/" + orthofilename + "old.shp")
-layer = shp.GetLayer(0)
-
-# Rename each tile
-for feature in layer:
-    infileName = feature.GetField('location')
-    print infileName
-    geom = feature.GetGeometryRef()
-    env = geom.GetEnvelope()
-
-    minX = int(env[0] + 0.001 + 2000000)
-    minY = int(env[2] + 0.001 + 1000000)
-    maxX = int(env[1] + 0.001 + 2000000)
-    maxY = int(env[3] + 0.001 + 1000000)
-    
-    infileNameFile_jpeg = str(minX)[1:4] + str(minY)[1:4] + "_"+aufloesung+".tif"   
-    outfileName_jpeg = str(minX)[0:4] + str(minY)[0:4] + "_"+aufloesung+".tif" 
-
-
-    cmd = "mv " + infileName + " " + path_lv03 + "/working/"+infileNameFile_jpeg
-    os.system(cmd)
-
-#remove Tileindex
-cmd = "rm " + path_lv03 + "/" + orthofilename + "old.shp " 
-cmd += path_lv03 + "/" + orthofilename + "old.dbf " 
-cmd += path_lv03 + "/" + orthofilename + "old.prj "
-cmd += path_lv03 + "/" + orthofilename + "old.shx "
-os.system(cmd)
-
+        print ("vrt erstellt")
 
 #Create Tileindex
 cmd = "gdaltindex -write_absolute_path " + path_lv03 + "/" + orthofilename + ".shp " 
@@ -192,71 +116,6 @@ shp = ogr.Open(path_lv03 + "/" + orthofilename + ".shp")
 layer = shp.GetLayer(0)
 
 
-# Do for each tile
-for feature in layer:
-    infileName = feature.GetField('location')
-    print infileName
-    geom = feature.GetGeometryRef()
-    env = geom.GetEnvelope()
-
-    minX = int(env[0] + 0.001 + 2000000)
-    minY = int(env[2] + 0.001 + 1000000)
-    maxX = int(env[1] + 0.001 + 2000000)
-    maxY = int(env[3] + 0.001 + 1000000)
-
-    middleX = (int(env[0] + 0.001)+int(env[1] + 0.001 ))/2
-    middleY = (int(env[2] + 0.001)+int(env[3] + 0.001 ))/2
-
-    minX_buffer = int(env[0] + 0.001-2)
-    minY_buffer = int(env[2] + 0.001-2)
-    maxX_buffer = int(env[1] + 0.001+2)
-    maxY_buffer = int(env[3] + 0.001+2)
-    
-    infileNameFile_jpeg = str(minX)[1:4] + str(minY)[1:4] + "_"+aufloesung+".tif"   
-    outfileName_jpeg = str(minX)[0:4] + str(minY)[0:4] + "_"+aufloesung+".tif" 
-
-
-
-    # Transformation lv03 to lv95
-    cmd = "gdalwarp -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
-    cmd += str(minY) + " " +  str(maxX) + " " +  str(maxY) + " -tr " + gsd + " " + gsd + " "
-    cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=MINISBLACK -co TILED=YES "
-    cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
-    cmd += "-co PREDICTOR=2" 
-    cmd += " -r " + method + " " + vrt + " " + path_lv95 + "/" + outfileName_jpeg
-    os.system(cmd)
-    print(cmd)
-    print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
-
-
-    #add infos to lv95 to the tile
-    cmd = "gdal_edit.py -a_srs EPSG:2056 " + path_lv95 + "/" +outfileName_jpeg
-    os.system(cmd)
-    print(os.path.getsize(path_lv95 + "/" +  outfileName_jpeg))
-
-    #log transformation
-    logger_notice.info(path_lv95 + "/" + outfileName_jpeg + " transformiert und zugeschnitten") 
-
-
-    # Copy files to working folder
-    cmd ="cp " + path_lv95 + "/"  +outfileName_jpeg + " " + path_lv95 + "/ohne_overviews/"
-    os.system(cmd)
-    print(os.path.getsize(path_lv95 + "/ohne_overviews/"+ outfileName_jpeg))
-
-
-if theme is not "dom":
-
-    if vrt_exists is False:
-        print("vrt erstellen")
-        #Create vrt
-        cmd = "gdalbuildvrt " + path_lv95 + "/ohne_overviews/" + orthofilename + ".vrt " + path_lv95 + "/ohne_overviews/*.tif"
-        os.system(cmd)
-        print ("vrt erstellt")
-
-
-#Shape-File with tile division
-shp = ogr.Open(path_lv03 + "/" + orthofilename + ".shp")
-layer = shp.GetLayer(0)
 
 # Do for each tile
 for feature in layer:
@@ -409,8 +268,9 @@ for feature in layer:
             os.system(cmd)
 
 
+
 cmd = "rm -r " + os.path.join(path_lv95, "ohne_overviews")
-os.system(cmd)
+#os.system(cmd)
 cmd = "rm -r " + os.path.join(path_lv03, "working")
 #os.system(cmd)
 cmd = "rm " + path_lv03 + "/" + orthofilename + ".shp " 

@@ -5,18 +5,19 @@
 from osgeo import gdal
 from osgeo import ogr, osr
 import os
-#import urllib2
+import requests
 import json
 import subprocess
 import logging
-import requests
+#import urllib2
 
 
-year = "2002"
-year_short="02"
-gsd = "0.50"
-aufloesung="50cm"
+year = "2011"
+year_short = "11"
+gsd = "0.125"
+aufloesung="12_5cm"
 colorisation = "rgb"
+
 
 ##Settings for RestService
 #proxy = urllib2.ProxyHandler({'http': 'http://barpastu:qwertz123$@proxy2.so.ch:8080'})
@@ -24,9 +25,10 @@ colorisation = "rgb"
 #opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
 #urllib2.install_opener(opener)
 
+
 #Logger for warnings and errors
 logger_error = logging.getLogger('brw_error')
-handler_error = logging.FileHandler('log_brw_error.log')
+handler_error = logging.FileHandler('log_brw_error_2011_cir.log')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 handler_error.setFormatter(formatter)
 logger_error.addHandler(handler_error) 
@@ -34,7 +36,7 @@ logger_error.setLevel(logging.WARNING)
 
 #Logger for notices
 logger_notice = logging.getLogger('brw')
-handler_notice = logging.FileHandler('log_brw.log')
+handler_notice = logging.FileHandler('log_brw_2011_cir.log')
 handler_notice.setFormatter(formatter)
 logger_notice.addHandler(handler_notice) 
 logger_notice.setLevel(logging.INFO)
@@ -46,77 +48,52 @@ logger_notice.setLevel(logging.INFO)
 logger_notice.info("Start " + year)
 
 
-#Settings for resampling-methode and vrt-path
+##Settings 
+
+#resampling-methode
 method = 'lanczos'
+
+#path to LV03-Data
 path_old_location = "/home/barpastu/Geodaten/LV03/ortho" + year_short + "/" + aufloesung + "/" + colorisation
-path_new_location="/home/barpastu/Geodaten/LV95/orthofoto/" + year 
+
+#path to LV95-Data (without colorisation and resolution)
+path_new_location="/home/barpastu/Geodaten/LV95/orthofoto/" + year
+
+#path to LV03-Data
 path_lv03 = path_old_location 
-path_lv95 = path_new_location + "/" + colorisation + "/" + aufloesung 
+
+#path to LV95-Data
+path_lv95 = path_new_location + "/"+ colorisation + "/" + aufloesung 
+
+#Filename of vrt
 orthofilename = "ortho"+year
+
+#path to lv03-vrt
 vrt = path_lv03 + "/" + orthofilename+".vrt"
+
+#path to lv95-vrt
 vrt_95 = path_lv95 + "/ohne_overviews/" +orthofilename+".vrt"
+
+#settings for check
 height_extract = 500
 vrt_exists = False
 
 
-#Create Folders
-if not os.path.exists(path_lv95):
-    os.makedirs(path_lv95)
-if not os.path.exists(path_lv95 + "/difference"):
-    os.makedirs(path_lv95 + "/difference")
-if not os.path.exists(path_lv95 + "/ohne_overviews"):
-    os.makedirs(path_lv95 + "/ohne_overviews")
 
 
-
-#Copy files to new folder (original-data)
-print(path_lv03 + "/original/")
-if not os.path.exists(path_lv03 + "/original/"):
-    os.makedirs(path_lv03 + "/original/")
-    print ("make path " + path_lv03 + "/original/")
-    for i in os.listdir(path_old_location + "/"):
-        if i.endswith(".tif"):
-            cmd = "gdal_translate -of GTiff -co 'TILED=YES' -a_srs EPSG:21781 " +path_old_location + "/"
-            cmd += i + " " + path_lv03 + "/original/" + os.path.basename(i)
-            os.system(cmd)
-        #exit()
-
-
-#Copy files to working folder (working-data)
-if not os.path.exists(path_lv03 + "/working/"):
-    os.makedirs(path_lv03 + "/working/")
-    cmd = "cp " + path_lv03 + "/original/*.tif " + path_lv03 + "/working/"
-    os.system(cmd)
 
 
 
 
-#Remove overviews
-for i in os.listdir(path_lv03 + "/working/"):
-    cmd = "gdal_translate -of GTiff -co 'TILED=YES' -expand rgb " + path_lv03+ "/original/" + os.path.basename(i) + " " + path_lv03 + "/working/" + i 
-    os.system(cmd)
-    #print (cmd)
-    if i.endswith(".tif"):
-        cmd = "gdaladdo -clean " + path_lv03 + "/working/" +i
-        os.system(cmd)
-        #print cmd
-        continue
-    else:
-        continue
+#Copy files to working folder (working-data)
+#if not os.path.exists(path_lv03 + "/working/"):
+#    os.makedirs(path_lv03 + "/working/")
+#    cmd = "cp " + path_lv03 + "/original/*.tif " + path_lv03 + "/working/"
+#    os.system(cmd)
 
 
-#Minimize tiff-files
-for infileNameFile_jpeg in os.listdir(os.path.join(path_lv03,"working")) :
-    #Splits up the tiff-file (to decrease the file size (without overviews))
-    cmd = "tiffsplit " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " tmp-"
-    os.system(cmd)
-    # Duplicate the geotransform and projection metadata from one raster dataset to another
-    cmd = "python gdalcopyproj.py " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " tmp-aaa.tif"
-    os.system(cmd)
-    cmd = "mv tmp-aaa.tif "+ os.path.join(path_lv03,"working", infileNameFile_jpeg)
-    os.system(cmd)
-    #cmd = "rm tmp-???.tif"
-    #os.system(cmd)
+
+
 
 
 #Definition of spatial reference systems
@@ -125,136 +102,26 @@ T_SRS = "+proj=somerc +lat_0=46.952405555555555N +lon_0=7.439583333333333E +ellp
 
 ogr.UseExceptions() 
 
-#Create Tileindex
-cmd = "gdaltindex -write_absolute_path " + path_lv03 + "/" + orthofilename + "old.shp " 
-cmd += path_lv03 + "/working/*.tif"
-os.system(cmd)
 
-#Shape-File with tile division
-shp = ogr.Open(path_lv03 + "/" + orthofilename + "old.shp")
-layer = shp.GetLayer(0)
-
-# Do for each tile
-for feature in layer:
-    infileName = feature.GetField('location')
-    print infileName
-    geom = feature.GetGeometryRef()
-    env = geom.GetEnvelope()
-
-    minX = int(env[0] + 0.001 + 2000000)
-    minY = int(env[2] + 0.001 + 1000000)
-    maxX = int(env[1] + 0.001 + 2000000)
-    maxY = int(env[3] + 0.001 + 1000000)
-    
-    infileNameFile_jpeg = str(minX)[1:4] + str(minY)[1:4] + "_"+aufloesung+".tif"   
-    outfileName_jpeg = str(minX)[0:4] + str(minY)[0:4] + "_"+aufloesung+".tif" 
-
-
-    cmd = "mv " + infileName + " " + path_lv03 + "/working/"+infileNameFile_jpeg
-    os.system(cmd)
-
-
-#Create Tileindex
-cmd = "gdaltindex -write_absolute_path " + path_lv03 + "/" + orthofilename + ".shp " 
-cmd += path_lv03 + "/working/*.tif"
-os.system(cmd)
-
-
-#Create vrt
-cmd = "gdalbuildvrt " + path_lv03 + "/" + orthofilename + ".vrt " + path_lv03 + "/working/*.tif"
-os.system(cmd)
 
 
 #Shape-File with tile division
 shp = ogr.Open(path_lv03 + "/" + orthofilename + ".shp")
 layer = shp.GetLayer(0)
 
-
-
-# Do for each tile
+# Do a check for each tile
 for feature in layer:
     infileName = feature.GetField('location')
-    print infileName
     geom = feature.GetGeometryRef()
     env = geom.GetEnvelope()
 
-    minX = int(env[0] + 0.001 + 2000000)
-    minY = int(env[2] + 0.001 + 1000000)
-    maxX = int(env[1] + 0.001 + 2000000)
-    maxY = int(env[3] + 0.001 + 1000000)
+    minX = int(env[0] + 0.001 )
+    minY = int(env[2] + 0.001 )
+    maxX = int(env[1] + 0.001 )
+    maxY = int(env[3] + 0.001 )
 
-    middleX = (int(env[0] + 0.001)+int(env[1] + 0.001 ))/2
-    middleY = (int(env[2] + 0.001)+int(env[3] + 0.001 ))/2
-
-    minX_buffer = int(env[0] + 0.001-2)
-    minY_buffer = int(env[2] + 0.001-2)
-    maxX_buffer = int(env[1] + 0.001+2)
-    maxY_buffer = int(env[3] + 0.001+2)
-    
-    infileNameFile_jpeg = str(minX)[1:4] + str(minY)[1:4] + "_"+aufloesung+".tif"   
-    outfileName_jpeg = str(minX)[0:4] + str(minY)[0:4] + "_"+aufloesung+".tif" 
-
-
-
-    # Transformieren 
-    cmd = "gdalwarp -dstnodata \"255,255,255\" -s_srs \"" + S_SRS + "\" -t_srs \"" + T_SRS + "\" -te "  + str(minX) + " "  
-    cmd += str(minY) + " " +  str(maxX) + " " +  str(maxY) + " -tr " + gsd + " " + gsd + " "
-    cmd += "-wo NUM_THREADS=ALL_CPUS -co PHOTOMETRIC=RGB -co TILED=YES "
-    cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
-    cmd += "-co PREDICTOR=2" 
-    cmd += " -r " + method + " " + vrt + " " + path_lv95 + "/" + outfileName_jpeg
-    os.system(cmd)
-    print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
-
-
-    cmd = "gdal_edit.py -a_srs EPSG:2056 " + path_lv95 + "/" +outfileName_jpeg
-    os.system(cmd)
-    print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
-
-
-    logger_notice.info(path_lv95 + "/" + outfileName_jpeg + " transformiert und zugeschnitten") 
-
-
-    cmd = "gdal_translate -co TILED=YES "
-    cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
-    cmd += "-co PREDICTOR=2"
-    #os.system(cmd)
-
-    # Files in anderen Ordner kopieren
-    cmd ="cp " + path_lv95 + "/" +outfileName_jpeg + " " + path_lv95 + "/ohne_overviews/"
-    os.system(cmd)
-    #print("Files kopierien")
-    print(os.path.getsize(path_lv95 + "/ohne_overviews/" + outfileName_jpeg))
-
-
-
-
-if vrt_exists is False:
-    print("vrt erstellen")
-    #Create vrt
-    cmd = "gdalbuildvrt " + path_lv95 + "/ohne_overviews/" + orthofilename + ".vrt " + path_lv95 + "/ohne_overviews/*.tif"
-    os.system(cmd)
-    print ("vrt erstellt")
-
-
-#Shape-File with tile division
-shp = ogr.Open(path_lv03 + "/" + orthofilename + ".shp")
-layer = shp.GetLayer(0)
-
-# Do for each tile
-for feature in layer:
-    infileName = feature.GetField('location')
-    print infileName
-    geom = feature.GetGeometryRef()
-    env = geom.GetEnvelope()
-
-    minX = int(env[0] + 0.001)
-    minY = int(env[2] + 0.001)
-    maxX = int(env[1] + 0.001)
-    maxY = int(env[3] + 0.001)
-
-    middleX = (int(env[0] + 0.001)+int(env[1] + 0.001 ))/2
-    middleY = (int(env[2] + 0.001)+int(env[3] + 0.001 ))/2
+    middleX = (int(minX + 0.001)+int(maxX + 0.001 ))/2
+    middleY = (int(minY + 0.001)+int(maxY + 0.001 ))/2
     
     infileNameFile_jpeg = str(minX)[0:3] + str(minY)[0:3] + "_"+aufloesung+".tif"   
     outfileName_jpeg = "2" + str(minX)[0:3] + "1" + str(minY)[0:3] + "_"+aufloesung+".tif" 
@@ -287,12 +154,10 @@ for feature in layer:
     cmd += str(round(float(xmin_st),2)) + " " + str(round(float(ymin_st),2)) + " " 
     cmd += str(round(float(xmax_st),2)) + " " + str(round(float(ymax_st),2)) 
     cmd += " -co TILED=YES -r " + method + " " 
-    #cmd += os.path.join(path_lv95, "ohne_overviews", outfileName_jpeg) + " "
     cmd += vrt_95 + " "     
     cmd += os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
     os.system(cmd)
 
-    print (cmd + " erledigt") 
     #Ausschnitt generieren LV03
     cmd = " gdalwarp -co PHOTOMETRIC=RGB -co TILED=YES -co PROFILE=GeoTIFF -tr " + gsd + " " + gsd
     cmd += " -te " + str(minX) + " " + str(minY) + " " 
@@ -300,8 +165,7 @@ for feature in layer:
     cmd +=os.path.join(path_lv03,"working", infileNameFile_jpeg) + " " 
     cmd +=os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg)
     os.system(cmd)
-
-
+    
     #if ausschnitt differe in size
     cmd = "identify -format \"%[fx:w]\" "
     cmd += os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg)
@@ -336,39 +200,59 @@ for feature in layer:
     else :
 		different_image_size = False
 
-    cmd = "gdal_translate -co COMPRESS=JPEG -co TILED=YES -co PHOTOMETRIC=YCBCR "
-    cmd += os.path.join(path_lv03,"working", infileNameFile_jpeg) + " " 
-    cmd += os.path.join(path_lv03, infileNameFile_jpeg)
-    os.system(cmd)
+    #Compress LV95-Tiles and LV03-Tiles to jpeg if older than 2012
+    if int(year)<=2012 :
 
-    cmd = "gdal_translate -co COMPRESS=JPEG -co TILED=YES -co PHOTOMETRIC=YCBCR " 
-    cmd += os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg) + " "
-    cmd += os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg)
-    os.system(cmd)
+         cmd = "gdal_translate -co COMPRESS=JPEG -co TILED=YES -co PHOTOMETRIC=YCBCR "
+         cmd += os.path.join(path_lv03,"working", infileNameFile_jpeg) + " " 
+         cmd += os.path.join(path_lv03, infileNameFile_jpeg)
+         os.system(cmd)
 
-    cmd = "gdal_translate -co COMPRESS=JPEG -co TILED=YES -co PHOTOMETRIC=YCBCR "
-    cmd += os.path.join(path_lv95, "ohne_overviews", outfileName_jpeg) + " "
-    cmd += os.path.join(path_lv95, outfileName_jpeg)
-    os.system(cmd)
+         cmd = "gdal_translate -co COMPRESS=JPEG -co TILED=YES -co PHOTOMETRIC=YCBCR " 
+         cmd += os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg) + " "
+         cmd += os.path.join(path_lv03, "ausschnitt_"+infileNameFile_jpeg)
+         os.system(cmd)
 
-    cmd = "gdal_translate -co COMPRESS=JPEG -co TILED=YES -co PHOTOMETRIC=YCBCR "
-    cmd += os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg) + " "
-    cmd += os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)
-    os.system(cmd)
+         cmd = "gdal_translate  -co COMPRESS=JPEG -co TILED=YES -co PHOTOMETRIC=YCBCR "
+         cmd += os.path.join(path_lv95, "ohne_overviews", outfileName_jpeg) + " "
+         cmd += os.path.join(path_lv95, outfileName_jpeg)
+         os.system(cmd)
+
+         cmd = "gdal_translate  -co COMPRESS=JPEG -co TILED=YES -co PHOTOMETRIC=YCBCR "
+         cmd += os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg) + " "
+         cmd += os.path.join(path_lv95, "ausschnitt_"+outfileName_jpeg)
+         os.system(cmd)
+
+    if int(year)>2012 :
+         cmd = "mv " + os.path.join(path_lv03, "working", "ausschnitt_"+infileNameFile_jpeg) + " "
+         cmd += path_lv03 +"/"
+         os.system(cmd)
+         cmd = "cp " + os.path.join(path_lv03,"working", infileNameFile_jpeg) + " "
+         cmd += path_lv03 + "/"
+         #os.system(cmd)
+         cmd = "cp " + os.path.join(path_lv95, "ohne_overviews", outfileName_jpeg) + " "
+         cmd += path_lv95 + "/"
+         os.system(cmd)
+         cmd = "mv " + os.path.join(path_lv95, "ohne_overviews", "ausschnitt_"+outfileName_jpeg) 
+         cmd += " " + path_lv95 + "/"
+         os.system(cmd)
 
 
     # generate Overviews 
-    cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE --config PHOTOMETRIC_OVERVIEW YCBCR --config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv95 + "/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
+    cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE "
+    cmd += "--config PHOTOMETRIC_OVERVIEW YCBCR "
+    cmd += "--config GDAL_TIFF_OVR_BLOCKSIZE 512 " 
+    cmd += path_lv95 + "/" + outfileName_jpeg + " 2 4 8 16 32 64 128"
     os.system(cmd) 
-    print("overviews generieren")
-    print(os.path.getsize(path_lv95 + "/" + outfileName_jpeg))
 
 
     #generate Overviews for newly compressed lv03-Tiles 
     if int(year)<=2012:
-        cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE  --config INTERLEAVE_OVERVIEW PIXEL --config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv03 + "/" + infileNameFile_jpeg + " 2 4 8 16 32 64 128"
+        cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE " 
+        cmd += "--config INTERLEAVE_OVERVIEW PIXEL "
+        cmd += "--config GDAL_TIFF_OVR_BLOCKSIZE 512 " 
+        cmd += path_lv03 + "/" + infileNameFile_jpeg + " 2 4 8 16 32 64 128"
         os.system(cmd)
-        print("overviews generieren lv03") 
 
 
     if different_image_size is False:
@@ -439,14 +323,13 @@ for feature in layer:
         cmd += " " + os.path.join(path_lv95,"difference")
         os.system(cmd)
         logger_error.error(os.path.join(path_lv95,outfileName_jpeg)+" kann nicht verglichen werden, da unterschiedliche Bildgroessen")
-
-
-
+        
+        
 cmd = "rm -r " + os.path.join(path_lv95, "ohne_overviews")
-#os.system(cmd)
+os.system(cmd)
 cmd = "rm -r " + os.path.join(path_lv03, "working")
 #os.system(cmd)
-#cmd = "rm " + path_lv03 + "/" + orthofilename + ".shp " 
+cmd = "rm " + path_lv03 + "/" + orthofilename + ".shp " 
 cmd += path_lv03 + "/" + orthofilename + ".vrt " + path_lv03 + "/" + orthofilename + ".shx " 
 cmd += path_lv03 + "/" + orthofilename + ".prj " + path_lv03 + "/" + orthofilename + ".dbf "
 #os.system(cmd)

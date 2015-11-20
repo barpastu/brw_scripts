@@ -15,7 +15,6 @@ year_short = "07"
 gsd = "5.000"
 aufloesung="5_m"
 colorisation = "rgb"
-aufloesung_old="12_5cm"
 if int(year)==1993 :
     photometric = "MINISBLACK"
     photometric_jpeg = "MINISBLACK"
@@ -26,7 +25,7 @@ if int(year)>1993 :
 
 #Logger for warnings and errors
 logger_error = logging.getLogger('brw_error')
-handler_error = logging.FileHandler('log_brw_error.log')
+handler_error = logging.FileHandler('log_brw_error_2007.log')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 handler_error.setFormatter(formatter)
 logger_error.addHandler(handler_error) 
@@ -34,7 +33,7 @@ logger_error.setLevel(logging.WARNING)
 
 #Logger for notices
 logger_notice = logging.getLogger('brw')
-handler_notice = logging.FileHandler('log_brw.log')
+handler_notice = logging.FileHandler('log_brw_2007.log')
 handler_notice.setFormatter(formatter)
 logger_notice.addHandler(handler_notice) 
 logger_notice.setLevel(logging.INFO)
@@ -49,7 +48,7 @@ logger_notice.info("Start " + year)
 ##Settings 
 
 #resampling-method
-method = 'bilinear'
+method = 'lanczos'
 
 #path to original data
 path_old_location = "/home/barpastu/Geodaten/LV03/ortho" + year_short + "/" + aufloesung + "/" + colorisation
@@ -59,11 +58,11 @@ path_new_location="/home/barpastu/Geodaten/LV95/orthofoto/" + year
 
 #path to vrt
 if int(year)>2002:
-    path_lv03_vrt ="/home/barpastu/Geodaten/LV03/ortho" + year_short + "/"+ aufloesung_old+"/" + colorisation
+    path_lv03_vrt ="/home/barpastu/Geodaten/LV03/ortho" + year_short + "/12_5cm/" + colorisation
 if int(year)==2002:
-    path_lv03_vrt ="/home/barpastu/Geodaten/LV03/ortho" + year_short + "/"+ aufloesung_old+"/"  + colorisation
+    path_lv03_vrt =path_new_location + "/lv03/"+ colorisation + "/50_cm"
 if int(year)==1993:
-    path_lv03_vrt ="/home/barpastu/Geodaten/LV03/ortho" + year_short + "/"+ aufloesung_old+"/" +colorisation
+    path_lv03_vrt =path_new_location + "/lv03/"+ colorisation + "/70_cm"
 path_lv03 = path_old_location
 path_lv95 = path_new_location + "/"+ colorisation + "/" + aufloesung 
 orthofilename = "ortho"+year
@@ -94,14 +93,14 @@ T_SRS = "+proj=somerc +lat_0=46.952405555555555N +lon_0=7.439583333333333E +ellp
 ogr.UseExceptions() 
 
 #Create vrt
-cmd = "gdalbuildvrt -addalpha " + path_lv95+ "/ohne_overviews/" + orthofilename + "_alpha.vrt " 
-cmd += path_new_location + "/"+colorisation +"/"+ aufloesung_old+"/*.tif "
+cmd = "gdalbuildvrt " + path_lv95+ "/ohne_overviews/" + orthofilename + "_alpha.vrt " 
+cmd += path_new_location + "/"+colorisation +"/12_5cm/*.tif "
 #cmd += path_lv95+ "/ohne_overviews/" + orthofilename + "_alpha.vrt "
 os.system(cmd)
 print(cmd)
 
 #set color of nodata-values from black to white
-cmd ="gdalwarp -co ALPHA=YES -tr " + gsd + " " + gsd + " "
+cmd ="gdalwarp -dstnodata \"255,255,255\"  -tr " + gsd + " " + gsd + " "
 cmd += "-wo NUM_THREADS=ALL_CPUS -co TILED=YES "
 cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
 cmd += "-co PREDICTOR=2" 
@@ -152,7 +151,7 @@ for feature in layer:
     infileNameFile_jpeg = outfileName_jpeg
 
      # Transformation gsd 12.5cm to 5m
-    cmd = "gdalwarp -co ALPHA=YES  -tr " + gsd + " " + gsd + " "
+    cmd = "gdalwarp -dstnodata \"255,255,255\"  -tr " + gsd + " " + gsd + " "
     cmd += "-wo NUM_THREADS=ALL_CPUS -co TILED=YES "
     cmd += "-co PROFILE=GeoTIFF -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE "  
     cmd += "-co PREDICTOR=2" 
@@ -314,10 +313,10 @@ for feature in layer:
 
 
     #generate Overviews for newly compressed lv03-Tiles 
-#if int(year)<=2012:
-#    cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE  --config INTERLEAVE_OVERVIEW PIXEL --config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv03 + "/" + infileNameFile_jpeg + " 2 4 8 16 32 64 128"
-#    os.system(cmd)
-#        #print("overviews generieren lv03") 
+if int(year)<=2012:
+    cmd = "gdaladdo -r nearest --config COMPRESS_OVERVIEW DEFLATE  --config INTERLEAVE_OVERVIEW PIXEL --config GDAL_TIFF_OVR_BLOCKSIZE 512 " + path_lv03 + "/" + infileNameFile_jpeg + " 2 4 8 16 32 64 128"
+    os.system(cmd)
+        #print("overviews generieren lv03") 
 
 
     #Compare
